@@ -1,0 +1,76 @@
+<div class="container-fluid">
+  <h2 class="mb-4">Monthly Profit Analysis</h2>
+
+  <!-- Month/Year Selector -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <label class="form-label">Select Month</label>
+      <select class="form-select" [(ngModel)]="selectedMonth" (change)="onMonthChange()">
+        <option *ngFor="let month of months; let i = index" [value]="i">
+          {{ month }}
+        </option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Select Year</label>
+      <select class="form-select" [(ngModel)]="selectedYear" (change)="onMonthChange()">
+        <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Profit Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body text-center">
+          <h5 class="text-muted">Monthly Sales</h5>
+          <h2 class="text-primary">₹{{ monthlySales | number:'1.2-2' }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body text-center">
+          <h5 class="text-muted">Monthly Expenses</h5>
+          <h2 class="text-danger">₹{{ monthlyExpenses | number:'1.2-2' }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body text-center">
+          <h5 class="text-muted">Monthly Profit/Loss</h5>
+          <h2 [class.text-success]="isProfit" [class.text-danger]="!isProfit">
+            ₹{{ monthlyProfit | number:'1.2-2' }}
+          </h2>
+          <span class="badge" [ngClass]="{'bg-success': isProfit, 'bg-danger': !isProfit}">
+            {{ isProfit ? 'Profit' : 'Loss' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formula Display -->
+  <div class="alert alert-info mb-4">
+    <strong>Formula:</strong> Profit = Total Sales - Total Expenses
+    <br>
+    <strong>Calculation:</strong> ₹{{ monthlySales | number:'1.2-2' }} - ₹{{ monthlyExpenses | number:'1.2-2' }} = 
+    <span [class.text-success]="isProfit" [class.text-danger]="!isProfit">
+      <strong>₹{{ monthlyProfit | number:'1.2-2' }}</strong>
+    </span>
+  </div>
+
+  <!-- Chart -->
+  <div class="card">
+    <div class="card-body">
+      <canvas baseChart
+        [data]="profitChartData"
+        [type]="profitChartType"
+        [options]="profitChartOptions">
+      </canvas>
+    </div>
+  </div>
+</div>
+

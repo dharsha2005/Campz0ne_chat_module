@@ -1,0 +1,9 @@
+.dashboard-card {
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+}
+

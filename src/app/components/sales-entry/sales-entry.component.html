@@ -1,0 +1,76 @@
+<div class="container-fluid">
+  <h2 class="mb-4">Sales Entry</h2>
+
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">New Sale Entry</div>
+        <div class="card-body">
+          <form [formGroup]="salesForm" (ngSubmit)="onSubmit()">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Date *</label>
+                <input type="date" class="form-control" formControlName="date" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Rice Variety *</label>
+                <select class="form-select" formControlName="riceVarietyId" required>
+                  <option value="">Select Rice Variety</option>
+                  <option *ngFor="let variety of riceVarieties" [value]="variety.id">
+                    {{ variety.name }} ({{ variety.category }}) - Stock: {{ variety.stockQuantity }} kg
+                  </option>
+                </select>
+                <small class="text-muted" *ngIf="salesForm.get('riceVarietyId')?.value">
+                  Available Stock: <strong>{{ getSelectedVarietyStock() }} kg</strong>
+                </small>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Quantity Sold (kg) *</label>
+                <input type="number" class="form-control" formControlName="quantitySold" 
+                       min="0.01" step="0.01" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Price per kg (₹) *</label>
+                <input type="number" class="form-control" formControlName="pricePerKg" 
+                       min="0" step="0.01" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Total Amount (₹) *</label>
+                <input type="number" class="form-control" formControlName="totalAmount" 
+                       readonly>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Payment Type *</label>
+                <select class="form-select" formControlName="paymentType" required>
+                  <option *ngFor="let type of paymentTypes" [value]="type">{{ type }}</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-success" [disabled]="!salesForm.valid">
+              Record Sale
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">Quick Info</div>
+        <div class="card-body">
+          <p><strong>Note:</strong></p>
+          <ul>
+            <li>Price per kg will be auto-filled from the selected variety</li>
+            <li>Total amount is calculated automatically</li>
+            <li>Stock will be reduced automatically after sale</li>
+            <li>Select payment type: Cash, UPI, or Credit</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

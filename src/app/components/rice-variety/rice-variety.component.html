@@ -1,0 +1,104 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Rice Variety & Stock Management</h2>
+    <button class="btn btn-primary" (click)="toggleForm()">
+      {{ showForm ? 'Cancel' : 'Add New Variety' }}
+    </button>
+  </div>
+
+  <!-- Add/Edit Form -->
+  <div class="card mb-4" *ngIf="showForm">
+    <div class="card-header">
+      {{ isEditMode ? 'Edit Rice Variety' : 'Add New Rice Variety' }}
+    </div>
+    <div class="card-body">
+      <form [formGroup]="riceVarietyForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Variety Name *</label>
+            <input type="text" class="form-control" formControlName="name" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Category *</label>
+            <select class="form-select" formControlName="category" required>
+              <option value="">Select Category</option>
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Stock Quantity (kg) *</label>
+            <input type="number" class="form-control" formControlName="stockQuantity" min="0" required>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Cost Price per kg (₹) *</label>
+            <input type="number" class="form-control" formControlName="costPricePerKg" min="0" step="0.01" required>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Selling Price per kg (₹) *</label>
+            <input type="number" class="form-control" formControlName="sellingPricePerKg" min="0" step="0.01" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success" [disabled]="!riceVarietyForm.valid">
+          {{ isEditMode ? 'Update' : 'Add' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="mb-3">
+    <input type="text" class="form-control" placeholder="Search by name or category..." 
+           (input)="searchVarieties($event)">
+  </div>
+
+  <!-- Low Stock Warning -->
+  <div class="alert alert-warning" *ngIf="hasLowStock()">
+    <strong>Low Stock Alert!</strong> Some rice varieties are running low on stock (less than {{ lowStockThreshold }} kg).
+  </div>
+
+  <!-- Rice Varieties Table -->
+  <div class="card">
+    <div class="card-header">Rice Varieties List</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Variety Name</th>
+              <th>Category</th>
+              <th>Stock (kg)</th>
+              <th>Cost Price/kg</th>
+              <th>Selling Price/kg</th>
+              <th>Profit/kg</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let variety of filteredVarieties" [class.table-warning]="isLowStock(variety.stockQuantity)">
+              <td>{{ variety.name }}</td>
+              <td><span class="badge bg-secondary">{{ variety.category }}</span></td>
+              <td>
+                <span [class.text-danger]="isLowStock(variety.stockQuantity)" [class.fw-bold]="isLowStock(variety.stockQuantity)">
+                  {{ variety.stockQuantity | number:'1.0-0' }}
+                </span>
+              </td>
+              <td>₹{{ variety.costPricePerKg | number:'1.2-2' }}</td>
+              <td>₹{{ variety.sellingPricePerKg | number:'1.2-2' }}</td>
+              <td>₹{{ (variety.sellingPricePerKg - variety.costPricePerKg) | number:'1.2-2' }}</td>
+              <td>
+                <button class="btn btn-sm btn-warning me-2" (click)="editVariety(variety)">Edit</button>
+                <button class="btn btn-sm btn-danger" (click)="deleteVariety(variety.id)">Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredVarieties.length === 0">
+              <td colspan="7" class="text-center">No rice varieties found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
