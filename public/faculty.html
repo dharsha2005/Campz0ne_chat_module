@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Faculty - Subjects & Materials</title>
+	<style>
+		body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+		.container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+		h1, h2 { color: #333; }
+		h2 { border-bottom: 2px solid #6f42c1; padding-bottom: 10px; margin-bottom: 20px; }
+		.form-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background: #fafafa; }
+		.form-group { margin-bottom: 15px; }
+		label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+		input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+		button { background: #6f42c1; color: white; padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px; }
+		button.secondary { background: #17a2b8; }
+		.success { color: #28a745; background: #d4edda; padding: 10px; border-radius: 4px; margin: 10px 0; }
+		.error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0; }
+		.list { margin-top: 10px; }
+		.item { padding: 12px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; background: #fff; }
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>👨‍🏫 Faculty Dashboard</h1>
+
+		<div class="form-section">
+			<h2>Your Profile</h2>
+			<p><strong>Name:</strong> <span id="facultyName">Loading...</span></p>
+			<p><strong>Department:</strong> <span id="facultyDept">Loading...</span></p>
+			<p><strong>College:</strong> <span id="facultyCollege">Loading...</span></p>
+		</div>
+
+		<div class="form-section">
+			<h2>Subjects</h2>
+			<form id="subjectForm">
+				<div class="form-group"><label for="subjectName">Name</label><input id="subjectName" name="name" required></div>
+				<div class="form-group"><label for="subjectCode">Code</label><input id="subjectCode" name="code"></div>
+				<div class="form-group"><label for="rollStart">Roll Start</label><input id="rollStart" name="rollStart" placeholder="e.g., 1A001"></div>
+				<div class="form-group"><label for="rollEnd">Roll End</label><input id="rollEnd" name="rollEnd" placeholder="e.g., 1A200"></div>
+				<div class="form-group"><label for="classroomId">Classroom/Section</label><input id="classroomId" name="classroomId" placeholder="e.g., A1"></div>
+				<button type="submit">Create Subject</button>
+			</form>
+
+			<div id="subjectsList" class="list">
+				<p>Loading subjects...</p>
+			</div>
+		</div>
+
+		<div class="form-section">
+			<h2>Upload Material</h2>
+			<form id="materialForm">
+				<div class="form-group"><label for="chatRoomId">Chat Room ID</label><input id="chatRoomId" name="chatRoomId" placeholder="e.g., room1" required></div>
+				<div class="form-group"><label for="materialSubject">Subject</label><select id="materialSubject" name="subjectId"><option value="">--Select Subject--</option></select></div>
+				<div class="form-group"><label for="materialTitle">Title</label><input id="materialTitle" name="title" required></div>
+				<div class="form-group"><label for="materialDescription">Description</label><textarea id="materialDescription" name="description"></textarea></div>
+				<div class="form-group"><label for="materialRollStart">Roll Start</label><input id="materialRollStart" name="rollStart"></div>
+				<div class="form-group"><label for="materialRollEnd">Roll End</label><input id="materialRollEnd" name="rollEnd"></div>
+				<div class="form-group"><label for="materialFile">File (optional)</label><input id="materialFile" name="materialFile" type="file"></div>
+				<button type="submit">Upload Material</button>
+				<button type="button" class="secondary" onclick="loadMaterialsFromForm()">Load Materials</button>
+			</form>
+
+			<div id="materialsList" class="list">
+				<p>Select a chat room and click "Load Materials".</p>
+			</div>
+		</div>
+
+		<div id="message"></div>
+	</div>
+
+	<script>
+		function token() { return localStorage.getItem('token'); }
+		async function api(path, opts) { opts = opts || {}; opts.headers = opts.headers || {}; if (token()) opts.headers['Authorization'] = 'Bearer ' + token(); const res = await fetch(path, opts); return res.json(); }
+		function showMessage(msg, isError = false) { const d = document.getElementById('message'); d.innerHTML = `<div class="${isError? 'error':'success'}">${msg}</div>`; setTimeout(()=>d.innerHTML='',5000); }
+
+		async function loadProfileAndSubjects() {
+			try {
+				const me = await api('/api/auth/me');
+				if (me && me.success && me.data) {
+					document.getElementById('facultyName').textContent = me.data.name || 'Unknown';
+					document.getElementById('facultyDept').textContent = me.data.departmentId || 'N/A';
+					document.getElementById('facultyCollege').textContent = me.data.collegeId || 'N/A';
+				}
+
+				const subjectsRes = await api('/api/subjects/my');
+				const list = document.getElementById('subjectsList');
+				const select = document.getElementById('materialSubject');
+				select.innerHTML = '<option value="">--Select Subject--</option>';
+				if (subjectsRes && subjectsRes.success && Array.isArray(subjectsRes.data)) {
+					if (subjectsRes.data.length === 0) list.innerHTML = '<p>No subjects found.</p>';
+					else list.innerHTML = subjectsRes.data.map(s => `<div class="item"><strong>${s.name}</strong> <small>(${s.code||''})</small><br>Rolls: ${s.rollStart||'N/A'} - ${s.rollEnd||'N/A'}</div>`).join('');
+					subjectsRes.data.forEach(s => { const opt = document.createElement('option'); opt.value = s._id; opt.textContent = s.name; select.appendChild(opt); });
+				} else {
+					list.innerHTML = '<p>Failed to load subjects.</p>';
+				}
+			} catch (e) { console.error(e); showMessage('Failed to load profile/subjects', true); }
+		}
+
+		document.getElementById('subjectForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const f = e.target;
+			const body = { name: f.name.value, code: f.code.value, classroomId: f.classroomId.value, rollStart: f.rollStart.value || undefined, rollEnd: f.rollEnd.value || undefined };
+			try {
+				const res = await api('/api/subjects', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+				if (res && res.success) { showMessage('Subject created'); f.reset(); loadProfileAndSubjects(); } else { showMessage(res.error || 'Failed to create subject', true); }
+			} catch (err) { console.error(err); showMessage('Network error', true); }
+		});
+
+		document.getElementById('materialForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const f = e.target;
+			const chatRoomId = f.chatRoomId.value.trim();
+			if (!chatRoomId) return showMessage('Chat room id required', true);
+			const url = `/api/chats/${encodeURIComponent(chatRoomId)}/materials`;
+			const fd = new FormData();
+			fd.append('title', f.title.value);
+			if (f.description.value) fd.append('description', f.description.value);
+			if (f.subjectId.value) fd.append('subjectId', f.subjectId.value);
+			if (f.rollStart.value) fd.append('rollStart', f.rollStart.value);
+			if (f.rollEnd.value) fd.append('rollEnd', f.rollEnd.value);
+			if (f.materialFile.files && f.materialFile.files[0]) fd.append('materialFile', f.materialFile.files[0]);
+
+			try {
+				const res = await fetch(url, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token() }, body: fd });
+				const json = await res.json();
+				if (json && json.success) { showMessage('Material uploaded'); f.reset(); } else { showMessage(json.error || 'Upload failed', true); }
+			} catch (err) { console.error(err); showMessage('Network error uploading file', true); }
+		});
+
+		async function loadMaterialsFromForm() {
+			const chatRoomId = document.getElementById('chatRoomId').value.trim();
+			if (!chatRoomId) return showMessage('Enter chat room id to load materials', true);
+			const list = document.getElementById('materialsList');
+			list.innerHTML = '<p>Loading materials...</p>';
+			try {
+				const res = await api(`/api/chats/${encodeURIComponent(chatRoomId)}/materials`);
+				if (res && res.success && Array.isArray(res.data)) {
+					if (res.data.length === 0) list.innerHTML = '<p>No materials found.</p>';
+					else list.innerHTML = res.data.map(m => {
+						const fileLink = m.fileUrl ? `<a href="${m.fileUrl}" target="_blank">View file</a><br>` : '';
+						const deleteBtn = m._id ? `<button onclick="deleteMaterial('${m._id}','${m.chatRoomId || ''}')" style="background:#dc3545;color:#fff;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;margin-top:8px;">Delete</button>` : '';
+						return `<div class="item"><strong>${m.title}</strong><br>${m.description? m.description+'<br>':''}${fileLink}Rolls: ${m.rollStart||'N/A'} - ${m.rollEnd||'N/A'}<br>${deleteBtn}</div>`;
+					}).join('');
+				} else { list.innerHTML = '<p>Failed to load materials.</p>'; }
+			} catch (err) { console.error(err); list.innerHTML = '<p>Failed to load materials.</p>'; }
+		}
+
+		async function deleteMaterial(materialId, chatRoomId) {
+			if (!materialId) return showMessage('Invalid material id', true);
+			if (!confirm('Delete this material? This cannot be undone.')) return;
+			try {
+				const res = await fetch(`/api/materials/${encodeURIComponent(materialId)}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token() } });
+				const json = await res.json();
+				if (json && json.success) {
+					showMessage('Material deleted');
+					// reload materials for the same chat room if provided
+					if (chatRoomId) {
+						document.getElementById('chatRoomId').value = chatRoomId;
+						loadMaterialsFromForm();
+					}
+				} else {
+					showMessage(json.error || 'Failed to delete material', true);
+				}
+			} catch (err) {
+				console.error('deleteMaterial error', err);
+				showMessage('Network error while deleting material', true);
+			}
+		}
+
+		// expose deleteMaterial globally for inline onclick handlers
+		window.deleteMaterial = deleteMaterial;
+
+		// Initialize
+		loadProfileAndSubjects();
+	</script>
+</body>
+</html>
+

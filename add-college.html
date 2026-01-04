@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Kongu Engineering College</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Add Kongu Engineering College</h1>
+        <p>This will add Kongu Engineering College to the system.</p>
+        
+        <div class="form-group">
+            <button onclick="addCollege()">Add Kongu Engineering College</button>
+        </div>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function addCollege() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<p>Adding college...</p>';
+            resultDiv.className = 'result';
+            
+            const collegeData = {
+                name: "Kongu Engineering College",
+                code: "KEC",
+                type: "engineering",
+                establishedYear: 1998,
+                address: "Perundurai, Erode, Tamil Nadu 638052, India",
+                contact: {
+                    phone: "+91-424-2550250",
+                    email: "info@kongu.ac.in",
+                    website: "https://kongu.ac.in"
+                }
+            };
+            
+            try {
+                // First, let's try to register as admin to get a token
+                const adminData = {
+                    name: "System Admin",
+                    email: "admin@kongu.ac.in",
+                    password: "admin123",
+                    role: "admin",
+                    collegeId: "temp", // Temporary, will be updated
+                    departmentId: "CSE"
+                };
+                
+                // Try to register admin
+                const registerResponse = await fetch('http://localhost:3000/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(adminData)
+                });
+                
+                const registerResult = await registerResponse.json();
+                
+                if (registerResult.success) {
+                    // Login to get token
+                    const loginResponse = await fetch('http://localhost:3000/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: "admin@kongu.ac.in",
+                            password: "admin123"
+                        })
+                    });
+                    
+                    const loginResult = await loginResponse.json();
+                    
+                    if (loginResult.success) {
+                        const token = loginResult.data.token;
+                        
+                        // Now add the college with authentication
+                        const collegeResponse = await fetch('http://localhost:3000/api/colleges', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + token
+                            },
+                            body: JSON.stringify(collegeData)
+                        });
+                        
+                        const collegeResult = await collegeResponse.json();
+                        
+                        if (collegeResult.success) {
+                            resultDiv.innerHTML = `
+                                <div class="success">
+                                    <h3>✅ College Added Successfully!</h3>
+                                    <p><strong>College Name:</strong> ${collegeResult.data.name}</p>
+                                    <p><strong>College Code:</strong> ${collegeResult.data.code}</p>
+                                    <p><strong>College ID:</strong> ${collegeResult.data._id}</p>
+                                    <p>You can now use this college when registering users.</p>
+                                </div>
+                            `;
+                        } else {
+                            resultDiv.innerHTML = `
+                                <div class="error">
+                                    <h3>❌ Failed to Add College</h3>
+                                    <p>Error: ${collegeResult.error}</p>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <h3>❌ Login Failed</h3>
+                                <p>Error: ${loginResult.error}</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Admin Registration Failed</h3>
+                            <p>Error: ${registerResult.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
