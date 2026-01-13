@@ -8,8 +8,8 @@ const UsersController = require('../controllers/usersController');
 router.post('/hod', authenticateToken, requireRole('admin'), UsersController.createHod);
 // Admin or HOD creates faculty (HOD restricted to their department in controller)
 router.post('/faculty', authenticateToken, requireRole('admin','hod'), UsersController.createFaculty);
-// Admin creates student
-router.post('/student', authenticateToken, requireRole('admin'), UsersController.createStudent);
+// Admin or HOD creates student
+router.post('/student', authenticateToken, requireRole('admin','hod'), UsersController.createStudent);
 // Get all users (admin or hod)
 router.get('/all', authenticateToken, requireRole('admin','hod'), UsersController.getAllUsers);
 // Get users by college (admin only)
