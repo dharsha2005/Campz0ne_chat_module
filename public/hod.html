@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>HOD - Faculty Management</title>
+  <title>HOD - Faculty & Student Management</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
     .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -20,6 +20,7 @@
     .faculty-list { margin-top: 20px; }
     .faculty-item { background: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
     .role-badge { background: #28a745; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
+    .student-badge { background: #6c757d; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -35,6 +36,7 @@
 
     <div class="tabs">
       <div class="tab active" onclick="showTab('faculty')">Faculty Management</div>
+      <div class="tab" onclick="showTab('students')">Student Management</div>
       <div class="tab" onclick="showTab('overview')">Overview</div>
     </div>
 
@@ -71,6 +73,47 @@
         <h2>Faculty List</h2>
         <div id="facultyList" class="faculty-list">
           <p>Loading faculty list...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Management Tab -->
+    <div id="students-tab" class="tab-content">
+      <div class="form-section">
+        <h2>Create Student</h2>
+        <form id="studentForm">
+          <div class="form-group">
+            <label for="studentName">Student Name:</label>
+            <input name="name" id="studentName" placeholder="Enter student name" required />
+          </div>
+          <div class="form-group">
+            <label for="studentEmail">Email:</label>
+            <input name="email" id="studentEmail" type="email" placeholder="student@college.com" required />
+          </div>
+          <div class="form-group">
+            <label for="studentPassword">Password:</label>
+            <input name="password" id="studentPassword" type="password" placeholder="Enter password" required />
+          </div>
+          <div class="form-group">
+            <label for="studentRollNumber">Roll Number:</label>
+            <input name="rollNumber" id="studentRollNumber" placeholder="e.g., 23ITR030" required />
+          </div>
+          <div class="form-group">
+            <label for="studentDepartment">Department ID:</label>
+            <input name="departmentId" id="studentDepartment" placeholder="e.g., CSE, IT, ECE" required />
+          </div>
+          <div class="form-group">
+            <label for="studentClassroom">Classroom/Section:</label>
+            <input name="classroomId" id="studentClassroom" placeholder="e.g., A1, B2, C3" />
+          </div>
+          <button type="submit">Create Student</button>
+        </form>
+      </div>
+
+      <div class="form-section">
+        <h2>Student List</h2>
+        <div id="studentList" class="faculty-list">
+          <p>Loading student list...</p>
         </div>
       </div>
     </div>
@@ -307,9 +350,106 @@
       }
     });
 
+    // Student form handler
+    document.getElementById('studentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const me = await api('/api/auth/me');
+      if (!me.success || !me.data) {
+        showMessage('Failed to get user information', true);
+        return;
+      }
+
+      const body = {
+        name: f.name.value,
+        email: f.email.value,
+        password: f.password.value,
+        rollNumber: f.rollNumber.value,
+        collegeId: me.data.collegeId,
+        departmentId: f.departmentId.value,
+        classroomId: f.classroomId.value
+      };
+      
+      try {
+        const res = await api('/api/users/student', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        
+        if (res.success) {
+          showMessage(`Student created successfully: ${res.data.name}`);
+          f.reset();
+          // Pre-fill department again
+          document.getElementById('studentDepartment').value = me.data.departmentId;
+          loadStudentList();
+          loadOverview();
+        } else {
+          showMessage(`Error: ${res.error}`, true);
+        }
+      } catch (error) {
+        showMessage(`Network error: ${error.message}`, true);
+      }
+    });
+
+    // Load student list for the department
+    async function loadStudentList() {
+      try {
+        const [me, usersRes, collegesRes] = await Promise.all([
+          api('/api/auth/me'),
+          api('/api/users/all'),
+          api('/api/colleges')
+        ]);
+        
+        if (!me.success || !me.data) {
+          throw new Error('Failed to get user info');
+        }
+
+        // Get all users and filter by department and role
+        if (usersRes.success && Array.isArray(usersRes.data)) {
+          const studentUsers = usersRes.data.filter(user => 
+            user.role === 'student' && 
+            String(user.collegeId) === String(me.data.collegeId) && 
+            user.departmentId === me.data.departmentId
+          );
+          
+          const colleges = (collegesRes.success && Array.isArray(collegesRes.data)) ? collegesRes.data : [];
+          
+          const studentListDiv = document.getElementById('studentList');
+          if (studentUsers.length === 0) {
+            studentListDiv.innerHTML = '<p>No students found in your department.</p>';
+          } else {
+            studentListDiv.innerHTML = studentUsers.map(student => {
+              const college = colleges.find(c => String(c._id) === String(student.collegeId));
+              const collegeName = college ? `${college.name} (${college.code || ''})` : (student.collegeId || 'N/A');
+              
+              return `
+                <div class="faculty-item">
+                  <div>
+                    <strong>${student.name || 'Unknown'}</strong><br>
+                    <small>Email: ${student.email || 'N/A'}</small><br>
+                    <small>Roll: ${student.rollNumber || 'N/A'}</small><br>
+                    <small>Classroom: ${student.classroomId || 'Not assigned'}</small><br>
+                    <small>College: ${collegeName}</small>
+                  </div>
+                  <span class="student-badge">STUDENT</span>
+                </div>
+              `;
+            }).join('');
+          }
+        } else {
+          document.getElementById('studentList').innerHTML = '<p>Failed to load student list.</p>';
+        }
+      } catch (error) {
+        console.error('Failed to load student list:', error);
+        document.getElementById('studentList').innerHTML = '<p>Failed to load student list.</p>';
+      }
+    }
+
     // Initialize the page
     loadHodInfo();
     loadFacultyList();
+    loadStudentList();
     loadOverview();
   </script>
 </body>
