@@ -1,82 +1,273 @@
-📁Cz-ct-mouleonfg└dtaba.js#MongoDBcoctio configuraioncllers├uthCorler.j#Authentin ndpoinchtAsignnCotrlerj#Assign anagmenhMtlsCntrolrj#Meral upload/maaen├lgeCoror.j# Cogaam
-│├── sujctsCnollr.js#mnagmnt│└──rCono.jsUsm├──miw/│ ├──ahMddle.jJWThen│   ├──prpatddwr.jChtacpvid│└──leMddlew.j  #Rol-badacscro
-├──mde/│├──Ur.j Usch│├──Cege.j#Cghma│  ├──Subje.j#SubjtchmaRomI│ ├── R.js# Ch oom chema│├──Papat.j# Ro pripnthma│ ├── .js#schma(Lampotmestmp)
-│ ├── ChaMerial.j      # Maeil shema│├──ChAinm.js    # Astchema│ ├── Message.j#Rdceipchma│ ├── Stu.js   # Tndic schema│├── MsagQuueLog.js#Msag quueogch│ └── ChatK.j#E keyssch (sub)├──pblc/│├──ndxtl#t lnt│ ├──d.hm#Amsbd│ ├──fclt.h #Fauly ord│├──u.m#Studdahboard│└──ud/ma/ #Marauoadiryrutes├uh   Autherutchat#ChatroutmerialsMerialutsssgmens  # AssgmenroutscollsCollouubjs        Subjrouts└ers#Usr manmnt rot
-├──rvis/├uhSevc      Authetiaic
-│   ├── participantService.js # Partipant management├nt
-│   ├── rollUtils.js         # Roll umber utilities
-│   └── sockeService.js    # Socket.IO servicesripts├sedDaa.jsDatabasseding crip
-│  ├── raeUser.js     #Uer eation utilyetup-collgCollegtup utly authentication
-2. **colleges**- College/oganization information
-3. **subjct** - Subject managmet with hat room intgration4567. **chat_materials** - File/material sharing with metadata
-8. **chat_assignments** - Assignment management
-9101112nd idex
-- `subjects`: `{ facultyI:1, collegeId: 1, chatRoomId: 1 }` - Faculty subject ing🎓Rol-Baed Access Cotroler Roles
+# CampZone Chat Module
 
-1. **Adm** - Full system access
-   - User manaement(creae HOD, Faculty, Students)
-   - College management
-   - View all users wit college/department info
-   - System configuration
+Production-ready real-time chat module built with MongoDB, Socket.IO, and Node.js.
 
-2. **HOD** - Department-level access
-   - Manag faculty andstudnt in departmen
-   -reate subjects and assignments
-   - Upoad materals for departm3 **Faculty** - Subject-level access
-  - Create and manage subjects
-   - Upload and manage materials
-   - e roll number rnges fo maerialaccess
-   - Delee own materials
+## 🎯 Features
 
-4. **Student** - Limited access
-   - View assigned materials
-   - Filter by roll number range
-   - Download accessible files
+- ✅ **One-to-One & Group Chat** - Support for private and group conversations
+- ✅ **Real-Time Communication** - WebSocket-based messaging via Socket.IO
+- ✅ **Message Ordering** - Lamport Logical Clocks ensure correct message ordering
+- ✅ **Reliable Delivery** - Message queue with retry logic and delivery status tracking
+- ✅ **Idempotency** - Duplicate message prevention using unique idempotency keys
+- ✅ **Read Receipts** - Track message read status per user
+- ✅ **Typing Indicators** - Real-time typing status with auto-expiry
+- ✅ **Online/Offline Presence** - Track user presence and last seen timestamps
+- ✅ **Encryption-Ready** - Database schema ready for future encryption implementation
+- ✅ **Faculty Dashboard** - Complete materials and subject management
+- ✅ **Reply Functionality** - Enhanced chat replies with sender names
+- ✅ **Material Upload** - File sharing with metadata and roll number filtering
 
-## 💬 Cat RplySytem
+## � Prerequisites
 
-### Enhanced Reply Fatues
+- Node.js (v14 or higher)
+- MongoDB (v4.4 or higher)
+- npm or yarn
 
-- **👤 Send Names** Shows actual username of person being replied to
-- **📝 MessageCotext**: Dislays original essage content
-- **🎯Viual Indication**: Clear reply formating with quoted content
-- **❌ Cncel Option**: Clea reply conext when needed- **🔗 Message Linking**: Replies linked to original messages
+## 🚀 Installation
 
-### Reply Flow
+1. **lone the repository**
+   ```bash
+   git clone https://github.com/dharsha2005/Camp0ne_chat_module.git
+   cd Campz0ne_chat_module
+   ```
 
-1. **Click Reply** on any message
-**Context Display**: Shows "Username: riginal message..."
-3. **Ty Respose**:Int fied focused automatally
-4. **Send Reply**: Includes quoted orgial message with senr name
-5. **Display**: Reply shows original sender contet clearly
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-## 📚 Materials Management
+3. **Set up environment variables**
+   Create a `.env` file in the root directory:
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/campzone_chat
+   PORT=3000
+   JWT_SECRET=your_jwt_secret_here
+   ```
 
-### Faculty Features
+4. **Start MongoDB**
+   Make sure MongoDB is running on your system.
 
-- **📁 Subject Creation**: Create subjects with roll number ranges
-- **💾 Material Upload**: Upload files wit metadata
-- **🎯 Roll Filtering**: Se access by roll nuber ranges
-- **✏️ Edit/Deete**: Manage ownmaterals
-- **🏫 College Ifo**:Displa college and classroom details
-- **💬 Chat Integration**: Materials linked to chat roms
+5. **Seed sample data (optional)**
+   ```bash
+   node scripts/seedData.js
+   ```
 
-### Student Feates
+6. **Start the server**
+   ```bash
+   npm start
+   ```
+   Or for development with auto-reload:
+   ```bash
+   npm run dev
+   ```
 
-- **📖Bwse Materials**: Vie accessible material
-- **🔍 Roll Filtering**: See only matrials for yourll ange
-- **📊Statitics**: Viw mateial accssstats
-- **⬇️ Download**: Access allowed fles
+7. **Access the application**
+   - **Chat Interface**: Navigate to `http://localhost:3000` for the chat test client
+    **Faculty Dashboard**: Navigate to `http://localhost:3000/faulty.hml`
+    **Adin Dashboard**: Navigate to `http://localhst:3000/admin.html`
+   - **Stdent Dashboard**: Navigate to `http://ocalhost:3000/studnt.html`
 
-## 🧪 Tesing
+## 📁 Prject Structure
 
-###Usng Test Client
+```
+Campz0e_chat_module/
+├── coni/
+│   ── ase            nnent
+├── ontro/
+│   ── antols       catioets
+│   ├── asmetsnol.s  mentmet
+│   ├── cataeriaole.s   atingmet
+│   ── colesntlles       llee mngeent   beotre        Subject aee
+    usestrller         # er anagement
+ ddleare
+   utiwares      #  auttication
+ aticinMileaes # a prtiiant alation
+    roiares    ese ces ontl ols
+    ses             # er sema
+    olls            ollee sce
+  cts            ec se with chatod
+  Chatoom          atrs
+    Chatrticins   omaticas sce
+  Message            Message e with rt ia  tats trac
+    atssgent signmen s
+  eReadRecipts  ea ret se
+  Typingtas   yping iator
+   esee    esee l sema
+  tEncrypioneys  ncryption emat
+ ui
+    ie.hm            Chat tescie
+   amintl            din dahoar
+   auytml         ctdashba
+    stdenthtl          ent s
+    ploasaterils   teil pld recto
+├── o/
+│   ── at.js           #ntication oes
+│   ├── s.js              es
+│   ├── ats.j         # at roe
+│   ├── aints.j     int e
+│   ├── eges.j         # ege rtes
+│   ├── sect.js # ect e
+│   ── us.js             eageeues sece
+│   ── atrie.js  #nction servelamortClock.js      # Lamport clock implementation
+│   ├── messageQueue.js      # Message queue with retry logic
+│   ├── pci
+│   ── presenceService.js   # Oline/offline presence tracking
+│   ├── typingService.js     # Typing indicator management
+│   ├── readReceiptService.js # Read receipt managemennt
+├── ocketHandles/
+│   ├── connectionHandler.js # Socket connecton/disconnection handling
+│   └── chatHandlers.js      # Chat event handlers
+├── scri/
+│   ── et          # e est cet     scrit
+│   └── see.js     # e seiit
+├──server.js                # Min server file
+├── package.json
+└── README.md
+```
 
-1. Strtthe server: `nm stat`
-2. Opn `public/index.html` in your brower6. **Reply Functionality**: Test reply with sender names7. **Material Upload**: Test file sharing via faculty dashboard
+## 🗄️ Database Schema
 
-JWT-badwihrolviictioRl-aedaccss control ndpitdforcss-origin requests
-- **File Uload**: Scue file handingwithtye valiaDaabascrypEnd-to-ndrypmpnttinAvacetrics dashboard
-- [ ] Mobil app inegation
-- [ ] Video/audo alling upporties
-- **File Upload**: Optimzed matrial torage and retrievald duimamn
+### Collections
+
+1. **sers** - User informaion and aut resence
+. **chat_rooms** - Chat room metadata
+. **chat_participants** - Room membership
+. **messages** - Chat messages with Lamport timestamps
+. **message_read_receipts** - Read status tracking
+. **typing_status** - Typing indicators (TTL index for auto-expiry)
+. **message_queue_log** - Message delivery queue
+. **chat_encryption_keys** - Ecryption keys (stub for future implementation)
+
+### Key Inexes
+
+-`messages`: `{ roomId: 1, lamportTimestamp: 1, createdAt: 1 }` - For message orderng
+- `messages`: `{ impotencyKey: 1 }` - Unique inde for idempotency
+- `chat_participants`: `{ roomId: 1, userId: 1 }` - Unique compound index
+- `message_read_receipts`: `{ messageId: 1, userId: 1 }` - Unique compound indexd ect indexing
+
+## 🔄 Message Flow Architecture
+
+```
+Client
+  ↓ (Socket.IO)
+Chat Server (Socket Handlers)
+  ↓
+Mssage Queue Servie
+  ↓ (with rerylogc)
+MogoDB (Messae Storage)
+  ↓
+Broadcast to Room Participants
+```
+
+### Message Ordering (Lamport Clocks)
+
+1. **Client-side**: Increment local Lamport clock before sending message
+2. **Server-side**: Receive message with `lamportTimestamp`
+3. **Server update**: `serverClock = max(serverClock, messageLamportTimestamp) + 1`
+4. **Storage**: Store message with server's Lamport timestamp
+5. **Query**: Order by `lamportTimestamp ASC, createdAt ASC`
+
+### Idempotency
+
+- Every message includes a unique `idempotencyKey` (e.g., `userId-timestamp-random`)
+- Server enforces `UNIQUE` index on `idempotencyKey`
+- Duplicate messages are safely ignored
+
+### Message Queue & Retry
+
+- Messages are enqueued with status `PENDING`
+- Delivery attempts update status to `DELIVERED` or `FAILED`
+- Failed messages are retried with exponential backoff (1s, 5s, 15s)
+- Max retries: 3 attempts
+
+## 📡 Socket.IO Events
+
+### Client → Server
+
+- `join_room` - Join a chat room
+- `leave_room` - Leave a chat room
+- `send_message` - Send a message
+- `typing_start` - Start typing indicator
+- `typing_stop` - Stop typing indicator
+- `mark_read` - Mark message as read
+- `get_messages` - Fetch messages for a room
+- `get_online_users` - Get online users in a room
+
+### Server → Client
+
+- `connected` - Connection confirmed
+- `joined_room` - Successfully joined room
+- `new_message` - New message received
+- `message_sent` - Message send acknowledgment
+- `user_typing` - Typing indicator update
+- `read_receipt` - Read receipt update
+- `online_users` - Online users list
+- `user_joined` - User joined room
+- `user_left` - User left room
+- `messages` - Messages list response
+- `error` - Error occurred
+
+##  esn
+
+### Using the est Client
+
+. Start the serer: npm start
+2. Open pulicindexhtml in your rowser or sere it ia preser
+3. Enter a User ID (e.g., `us1`, `user2`)
+4. Click "Connect"
+5. Select a room and start chatting
+
+### Test Scenarios
+
+1. **Multiple Users**: Open multiple browser tabs with different User IDs
+2. **Message Ordering**: Send messages rapidly and verify ordering
+3. **Typing Indicators**: Type in one client and see indicator in others
+4. **Read Receipts**: Mark messages as read and verify updates
+5. **Reconnection**: Disconnect and reconnect to test reconnection handling
+
+## 🔐 Security Considerations
+
+- **Authentication**: se authentication t e erfan
+- **Authorization**: oebs erol fo all endpoints
+- **Input Validatin**: Validate al inputso server-sie
+- **Rate Limiting**: Imlement rate limitng for producion use
+- **CORS**: Configure  roperl  pdtion
+- **Encryption**: tse chema ready for future ention
+
+## 🚧 Future Enhancements
+
+- [ ] e enction ilemeation
+- [ ] Message search funcoality
+- [ ] Push notifications
+- [ ] Message reactions/emojis
+- [ ] dned moderation faues
+- [ ] Analytan metrics detrics
+
+## 📝 License
+
+ISC
+
+## 👨‍💻 Archtecture Not
+### Scalability
+
+ **HorizontalScaling: Socket.IO supports Redis adapter for multi-server deployment
+- **Database**: MongoDB sharding can be implemented for large-scale deployments
+- **Message Queue**: Consider using Bull or Agenda.js for production message queue
+
+### Reliability
+
+- **Message Persistence**: All messages are persisted before delivery
+- **Retry Logic**: Failed messages are automatically retried
+- **Idempotency**: Prevents duplicate messages even under network issues
+- **Connection Handling**: Graceful handling of disconnections and reconnections
+
+### Performance
+
+- **Indexes**: Optimized database indexes for common queries
+- **TTL Indexes**: Typing status auto-expires via MongoDB TTL
+- **Efficient Queries**: Compound indexes for room-based queries
+- **iesal
+
+---
+
+Built with ❤️ for production-ready re-time chat anecatonal angeet
