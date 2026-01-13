@@ -1,0 +1,714 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin - Academic Management</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1, h2 { color: #333; }
+    h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
+    .form-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background: #fafafa; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+    input[type="text"], input[type="email"], input[type="password"], input[type="number"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+    button { background: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px; }
+    button:hover { background: #0056b3; }
+    .success { color: #28a745; background: #d4edda; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    .error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    .user-list { margin-top: 20px; }
+    .user-item { background: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd; }
+    .role-badge { background: #007bff; color: white; padding: 3px 8px; border-radius: 12px; font-size: 12px; margin-left: 10px; }
+    .college-list { margin-top: 20px; }
+    .college-item { background: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd; border-left: 4px solid #007bff; }
+    .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+    .tab { padding: 12px 20px; background: #f8f9fa; border: 1px solid #ddd; border-bottom: none; cursor: pointer; margin-right: 5px; }
+    .tab.active { background: #007bff; color: white; border-color: #007bff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 768px) { .two-column { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎓 Admin Dashboard</h1>
+    
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('colleges')">Colleges</div>
+      <div class="tab" onclick="showTab('users')">Users</div>
+      <div class="tab" onclick="showTab('overview')">Overview</div>
+    </div>
+
+    <!-- Colleges Tab -->
+    <div id="colleges-tab" class="tab-content active">
+      <div class="form-section">
+        <h2>Create College</h2>
+        <form id="collegeForm">
+          <div class="form-group">
+            <label for="collegeName">College Name:</label>
+            <input name="name" id="collegeName" placeholder="e.g., Institute of Technology" required />
+          </div>
+          <div class="form-group">
+            <label for="collegeCode">College Code:</label>
+            <input name="code" id="collegeCode" placeholder="e.g., IOT" required />
+          </div>
+          <div class="form-group">
+            <label for="collegeType">College Type:</label>
+            <select name="type" id="collegeType" required>
+              <option value="">--Select Type--</option>
+              <option value="engineering">Engineering</option>
+              <option value="arts">Arts</option>
+              <option value="science">Science</option>
+              <option value="commerce">Commerce</option>
+              <option value="medical">Medical</option>
+              <option value="polytechnic">Polytechnic</option>
+              <option value="university">University</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="establishedYear">Established Year:</label>
+            <input name="establishedYear" id="establishedYear" type="number" min="1800" max="2026" placeholder="e.g., 2005" />
+          </div>
+          <div class="form-group">
+            <label for="collegeAddress">Address:</label>
+            <textarea name="address" id="collegeAddress" placeholder="Complete address" rows="3"></textarea>
+          </div>
+          <div class="two-column">
+            <div class="form-group">
+              <label for="collegePhone">Phone:</label>
+              <input name="phone" id="collegePhone" placeholder="e.g., +91-1234567890" />
+            </div>
+            <div class="form-group">
+              <label for="collegeEmail">Email:</label>
+              <input name="email" id="collegeEmail" type="email" placeholder="college@example.com" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="collegeWebsite">Website:</label>
+            <input name="website" id="collegeWebsite" placeholder="https://college.edu" />
+          </div>
+          <button type="submit">Create College</button>
+        </form>
+      </div>
+
+      <div class="form-section">
+        <h2>Colleges List</h2>
+        <div id="collegesList" class="college-list">
+          <p>Loading colleges...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Tab -->
+    <div id="users-tab" class="tab-content">
+      <div class="form-section">
+        <h2>Create HOD</h2>
+        <form id="hodForm">
+          <div class="form-group">
+            <label for="hodName">Name:</label>
+            <input name="name" id="hodName" placeholder="Enter HOD name" required />
+          </div>
+          <div class="form-group">
+            <label for="hodEmail">Email:</label>
+            <input name="email" id="hodEmail" type="email" placeholder="hod@department.com" required />
+          </div>
+          <div class="form-group">
+            <label for="hodPassword">Password:</label>
+            <input name="password" id="hodPassword" type="password" placeholder="Enter password" required />
+          </div>
+          <div class="form-group">
+            <label for="hodCollege">College:</label>
+            <select name="collegeId" id="hodCollege" required>
+              <option value="">--Select College--</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="hodDepartment">Department ID:</label>
+            <input name="departmentId" id="hodDepartment" placeholder="e.g., CSE, IT, ECE" required />
+          </div>
+          <button type="submit">Create HOD</button>
+        </form>
+      </div>
+
+      <div class="form-section">
+        <h2>Create Faculty</h2>
+        <form id="facultyForm">
+          <div class="form-group">
+            <label for="facultyName">Name:</label>
+            <input name="name" id="facultyName" placeholder="Enter faculty name" required />
+          </div>
+          <div class="form-group">
+            <label for="facultyEmail">Email:</label>
+            <input name="email" id="facultyEmail" type="email" placeholder="faculty@department.com" required />
+          </div>
+          <div class="form-group">
+            <label for="facultyPassword">Password:</label>
+            <input name="password" id="facultyPassword" type="password" placeholder="Enter password" required />
+          </div>
+          <div class="form-group">
+            <label for="facultyCollege">College:</label>
+            <select name="collegeId" id="facultyCollege" required>
+              <option value="">--Select College--</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="facultyDepartment">Department ID:</label>
+            <input name="departmentId" id="facultyDepartment" placeholder="e.g., CSE, IT, ECE" required />
+          </div>
+          <div class="form-group">
+            <label for="facultyClassroom">Classroom/Section:</label>
+            <input name="classroomId" id="facultyClassroom" placeholder="e.g., A1, B2, C3" />
+          </div>
+          <button type="submit">Create Faculty</button>
+        </form>
+      </div>
+
+      <div class="form-section">
+        <h2>Create Student</h2>
+        <form id="studentForm">
+          <div class="form-group">
+            <label for="studentName">Name:</label>
+            <input name="name" id="studentName" placeholder="Enter student name" required />
+          </div>
+          <div class="form-group">
+            <label for="studentEmail">Email:</label>
+            <input name="email" id="studentEmail" type="email" placeholder="student@college.com" required />
+          </div>
+          <div class="form-group">
+            <label for="studentPassword">Password:</label>
+            <input name="password" id="studentPassword" type="password" placeholder="Enter password" required />
+          </div>
+          <div class="form-group">
+            <label for="studentRoll">Roll Number:</label>
+            <input name="rollNo" id="studentRoll" placeholder="e.g., 23ITR030" required />
+          </div>
+          <div class="form-group">
+            <label for="studentCollege">College:</label>
+            <select name="collegeId" id="studentCollege" required>
+              <option value="">--Select College--</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="studentDepartment">Department ID:</label>
+            <input name="departmentId" id="studentDepartment" placeholder="e.g., CSE, IT, ECE" required />
+          </div>
+          <div class="form-group">
+            <label for="studentClassroom">Classroom/Section:</label>
+            <input name="classroomId" id="studentClassroom" placeholder="e.g., A1, B2, C3" />
+          </div>
+          <button type="submit">Create Student</button>
+        </form>
+      </div>
+
+      <!-- User Lists Section -->
+      <div class="form-section">
+        <h2>User Lists</h2>
+        <div class="tabs" style="margin-bottom: 20px;">
+          <div class="tab active" onclick="showUserTab('hod')">HODs</div>
+          <div class="tab" onclick="showUserTab('faculty')">Faculty</div>
+          <div class="tab" onclick="showUserTab('student')">Students</div>
+        </div>
+        
+        <div id="hodList" class="user-list user-tab-content">
+          <p>Loading HODs...</p>
+        </div>
+        
+        <div id="facultyList" class="user-list user-tab-content" style="display: none;">
+          <p>Loading Faculty...</p>
+        </div>
+        
+        <div id="studentList" class="user-list user-tab-content" style="display: none;">
+          <p>Loading Students...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="overview-tab" class="tab-content">
+      <div class="form-section">
+        <h2>System Overview</h2>
+        <div id="overviewStats">
+          <p>Loading system statistics...</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <script>
+    // Check authentication on page load
+    function checkAuthentication() {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('currentUser');
+      
+      console.log('🔍 Authentication check:');
+      console.log('🔍 Token exists:', !!token);
+      console.log('🔍 User data exists:', !!user);
+      
+      if (!token || !user) {
+        console.log('❌ No authentication found, redirecting to login...');
+        window.location.href = '/';
+        return false;
+      }
+      
+      try {
+        const userData = JSON.parse(user);
+        console.log('🔍 User data:', userData);
+        console.log('🔍 User role:', userData.role);
+        
+        if (userData.role !== 'admin') {
+          console.log('❌ User is not admin, redirecting...');
+          console.log('❌ Expected: admin, Got:', userData.role);
+          window.location.href = '/';
+          return false;
+        }
+        console.log('✅ Admin authentication confirmed');
+        return true;
+      } catch (e) {
+        console.log('❌ Invalid user data, redirecting...');
+        console.log('❌ Parse error:', e.message);
+        window.location.href = '/';
+        return false;
+      }
+    }
+
+    function token() { return localStorage.getItem('token'); }
+    
+    async function api(path, opts) {
+      opts = opts || {};
+      opts.headers = opts.headers || {};
+      opts.headers['Authorization'] = 'Bearer ' + token();
+      
+      const response = await fetch(path, opts);
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.log('❌ 401 Unauthorized - Token may be expired or invalid');
+          localStorage.removeItem('token');
+          localStorage.removeItem('currentUser');
+          window.location.href = '/';
+          return;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    }
+
+    async function get(url) {
+      const res = await fetch(url, {headers:{'Authorization':'Bearer '+token()}});
+      return res.json();
+    }
+
+    async function post(url, data) {
+      console.log('🔍 Making POST request to:', url);
+      console.log('🔍 Request data:', data);
+      console.log('🔍 Token:', token() ? 'exists' : 'missing');
+      
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token()
+        },
+        body: JSON.stringify(data)
+      });
+      
+      console.log('🔍 Response status:', res.status);
+      console.log('🔍 Response ok:', res.ok);
+      
+      const result = await res.json();
+      console.log('🔍 Response data:', result);
+      return result;
+    }
+
+    function showMessage(message, isError = false) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.innerHTML = `<div class="${isError ? 'error' : 'success'}">${message}</div>`;
+      setTimeout(() => messageDiv.innerHTML = '', 5000);
+    }
+
+    // Delete college function
+    async function deleteCollege(collegeId, collegeName) {
+      if (!collegeId) {
+        showMessage('Invalid college ID', true);
+        return;
+      }
+      
+      if (!confirm(`Are you sure you want to delete "${collegeName}"? This action cannot be undone.`)) {
+        return;
+      }
+      
+      try {
+        const res = await api(`/api/colleges/${collegeId}`, { method: 'DELETE' });
+        
+        if (res && res.success) {
+          showMessage(`College "${collegeName}" deleted successfully`);
+          // Reload colleges list
+          loadCollegesList();
+          loadColleges(); // Reload dropdowns
+          loadOverview(); // Reload overview stats
+        } else {
+          const errorMsg = res?.error || res?.message || 'Failed to delete college';
+          showMessage(`Error: ${errorMsg}`, true);
+          console.error('Delete college response:', res);
+        }
+      } catch (error) {
+        console.error('Delete college error:', error);
+        showMessage(`Network error: ${error.message || 'Failed to delete college'}`, true);
+      }
+    }
+    
+    // Make deleteCollege globally accessible
+    window.deleteCollege = deleteCollege;
+
+    function showTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      
+      // Show selected tab
+      document.getElementById(tabName + '-tab').classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function showUserTab(tabName) {
+      // Hide all user tab contents
+      document.querySelectorAll('.user-tab-content').forEach(tab => tab.style.display = 'none');
+      document.querySelectorAll('.tabs .tab').forEach(tab => tab.classList.remove('active'));
+      
+      // Show selected user tab
+      document.getElementById(tabName + 'List').style.display = 'block';
+      event.target.classList.add('active');
+    }
+
+    // Load users with college and department information
+    async function loadUsers() {
+      try {
+        const [usersRes, collegesRes] = await Promise.all([
+          get('/api/users/all'),
+          get('/api/colleges')
+        ]);
+        
+        if (usersRes.success && Array.isArray(usersRes.data)) {
+          const users = usersRes.data;
+          const colleges = (collegesRes.success && Array.isArray(collegesRes.data)) ? collegesRes.data : [];
+          
+          // Load HODs
+          const hods = users.filter(u => u.role === 'hod');
+          const hodContainer = document.getElementById('hodList');
+          if (hods.length === 0) {
+            hodContainer.innerHTML = '<p>No HODs created yet.</p>';
+          } else {
+            hodContainer.innerHTML = hods.map(hod => `
+              <div class="user-item">
+                <h4>${hod.name || 'Unknown'} <span class="role-badge">HOD</span></h4>
+                <p><strong>Email:</strong> ${hod.email || 'N/A'}</p>
+                <p><strong>Department:</strong> ${hod.departmentId || 'N/A'}</p>
+                <p><strong>College:</strong> ${getCollegeName(hod.collegeId, colleges)}</p>
+                <p><strong>User ID:</strong> ${hod.userId || 'N/A'}</p>
+              </div>
+            `).join('');
+          }
+          
+          // Load Faculty
+          const faculty = users.filter(u => u.role === 'faculty');
+          const facultyContainer = document.getElementById('facultyList');
+          if (faculty.length === 0) {
+            facultyContainer.innerHTML = '<p>No faculty created yet.</p>';
+          } else {
+            facultyContainer.innerHTML = faculty.map(fac => `
+              <div class="user-item">
+                <h4>${fac.name || 'Unknown'} <span class="role-badge">Faculty</span></h4>
+                <p><strong>Email:</strong> ${fac.email || 'N/A'}</p>
+                <p><strong>Department:</strong> ${fac.departmentId || 'N/A'}</p>
+                <p><strong>Classroom:</strong> ${fac.classroomId || 'N/A'}</p>
+                <p><strong>College:</strong> ${getCollegeName(fac.collegeId, colleges)}</p>
+                <p><strong>User ID:</strong> ${fac.userId || 'N/A'}</p>
+              </div>
+            `).join('');
+          }
+          
+          // Load Students
+          const students = users.filter(u => u.role === 'student');
+          const studentContainer = document.getElementById('studentList');
+          if (students.length === 0) {
+            studentContainer.innerHTML = '<p>No students created yet.</p>';
+          } else {
+            studentContainer.innerHTML = students.map(student => `
+              <div class="user-item">
+                <h4>${student.name || 'Unknown'} <span class="role-badge">Student</span></h4>
+                <p><strong>Email:</strong> ${student.email || 'N/A'}</p>
+                <p><strong>Roll Number:</strong> ${student.rollNo || 'N/A'}</p>
+                <p><strong>Department:</strong> ${student.departmentId || 'N/A'}</p>
+                <p><strong>Classroom:</strong> ${student.classroomId || 'N/A'}</p>
+                <p><strong>College:</strong> ${getCollegeName(student.collegeId, colleges)}</p>
+                <p><strong>User ID:</strong> ${student.userId || 'N/A'}</p>
+              </div>
+            `).join('');
+          }
+        } else {
+          document.getElementById('hodList').innerHTML = '<p>Failed to load users.</p>';
+          document.getElementById('facultyList').innerHTML = '<p>Failed to load users.</p>';
+          document.getElementById('studentList').innerHTML = '<p>Failed to load users.</p>';
+        }
+      } catch (error) {
+        console.error('Failed to load users:', error);
+        document.getElementById('hodList').innerHTML = '<p>Failed to load users.</p>';
+        document.getElementById('facultyList').innerHTML = '<p>Failed to load users.</p>';
+        document.getElementById('studentList').innerHTML = '<p>Failed to load users.</p>';
+      }
+    }
+
+    // Helper function to get college name from ID
+    function getCollegeName(collegeId, colleges) {
+      if (!collegeId || !colleges || !Array.isArray(colleges)) return 'N/A';
+      const college = colleges.find(c => String(c._id) === String(collegeId));
+      return college ? `${college.name} (${college.code || ''})` : collegeId;
+    }
+
+    // Load colleges for dropdowns
+    async function loadColleges() {
+      try {
+        const res = await get('/api/colleges');
+        if (res.success && Array.isArray(res.data)) {
+          const collegeSelects = ['hodCollege', 'facultyCollege', 'studentCollege'];
+          collegeSelects.forEach(selectId => {
+            const select = document.getElementById(selectId);
+            if (select) {
+              select.innerHTML = '<option value="">--Select College--</option>';
+              res.data.forEach(college => {
+                const option = document.createElement('option');
+                option.value = college._id;
+                option.textContent = `${college.name} (${college.code || ''})`;
+                select.appendChild(option);
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load colleges for dropdowns:', error);
+      }
+    }
+
+    // Load colleges list
+    async function loadCollegesList() {
+      try {
+        const res = await get('/api/colleges');
+        const container = document.getElementById('collegesList');
+        
+        if (res.success && Array.isArray(res.data)) {
+          if (res.data.length === 0) {
+            container.innerHTML = '<p>No colleges created yet.</p>';
+            return;
+          }
+          
+          container.innerHTML = res.data.map(college => {
+            // Format address properly (handle both string and object)
+            let addressText = '';
+            if (college.address) {
+              if (typeof college.address === 'string') {
+                addressText = college.address;
+              } else if (typeof college.address === 'object') {
+                const addrParts = [];
+                if (college.address.street) addrParts.push(college.address.street);
+                if (college.address.city) addrParts.push(college.address.city);
+                if (college.address.state) addrParts.push(college.address.state);
+                if (college.address.pincode) addrParts.push(college.address.pincode);
+                if (college.address.country) addrParts.push(college.address.country);
+                addressText = addrParts.join(', ') || 'Address not specified';
+              }
+            }
+            
+            return `
+            <div class="college-item" style="position: relative;">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div style="flex: 1;">
+                  <h3>${college.name} (${college.code || 'N/A'})</h3>
+                  <p><strong>Type:</strong> ${college.type || 'N/A'}</p>
+                  <p><strong>Established:</strong> ${college.establishedYear || 'N/A'}</p>
+                  ${addressText ? `<p><strong>Address:</strong> ${addressText}</p>` : ''}
+                  ${college.contact?.phone ? `<p><strong>Phone:</strong> ${college.contact.phone}</p>` : ''}
+                  ${college.contact?.email ? `<p><strong>Email:</strong> ${college.contact.email}</p>` : ''}
+                  ${college.contact?.website ? `<p><strong>Website:</strong> <a href="${college.contact.website}" target="_blank">${college.contact.website}</a></p>` : ''}
+                  <p><strong>Status:</strong> ${college.isActive !== false ? 'Active' : 'Inactive'}</p>
+                </div>
+                <div style="margin-left: 15px;">
+                  <button onclick="deleteCollege('${college._id}', '${(college.name || '').replace(/'/g, "\\'")}')" style="background: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">Delete</button>
+                </div>
+              </div>
+            </div>
+          `;
+          }).join('');
+        } else {
+          container.innerHTML = '<p>Failed to load colleges.</p>';
+        }
+      } catch (error) {
+        console.error('Failed to load colleges list:', error);
+        document.getElementById('collegesList').innerHTML = '<p>Failed to load colleges.</p>';
+      }
+    }
+
+    // Load system overview
+    async function loadOverview() {
+      try {
+        const [collegesRes, usersRes] = await Promise.all([
+          get('/api/colleges'),
+          get('/api/users/all')
+        ]);
+        
+        const container = document.getElementById('overviewStats');
+        
+        let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">';
+        
+        if (collegesRes.success) {
+          html += `<div style="background: #e7f3ff; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>${collegesRes.data.length}</h3>
+            <p>Total Colleges</p>
+          </div>`;
+        }
+        
+        if (usersRes.success) {
+          const users = usersRes.data;
+          const stats = {
+            admin: users.filter(u => u.role === 'admin').length,
+            hod: users.filter(u => u.role === 'hod').length,
+            faculty: users.filter(u => u.role === 'faculty').length,
+            student: users.filter(u => u.role === 'student').length
+          };
+          
+          html += `<div style="background: #fff3cd; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>${stats.admin}</h3>
+            <p>Admins</p>
+          </div>`;
+          
+          html += `<div style="background: #d4edda; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>${stats.hod}</h3>
+            <p>HODs</p>
+          </div>`;
+          
+          html += `<div style="background: #f8d7da; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>${stats.faculty}</h3>
+            <p>Faculty</p>
+          </div>`;
+          
+          html += `<div style="background: #e2e3e5; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>${stats.student}</h3>
+            <p>Students</p>
+          </div>`;
+        }
+        
+        html += '</div>';
+        container.innerHTML = html;
+      } catch (error) {
+        console.error('Failed to load overview:', error);
+        document.getElementById('overviewStats').innerHTML = '<p>Failed to load system overview.</p>';
+      }
+    }
+
+    // College form submission
+    document.getElementById('collegeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      
+      // Handle address - if it's a string, keep it as string; if it needs to be an object, convert it
+      let address = f.address.value.trim();
+      // If address is provided as a simple string, we'll send it as is
+      // The backend/controller will handle it appropriately
+      
+      const data = {
+        name: f.name.value.trim(),
+        code: f.code.value.trim(),
+        type: f.type.value,
+        establishedYear: f.establishedYear.value ? parseInt(f.establishedYear.value) : undefined,
+        address: address || undefined, // Send as string if provided
+        contact: {
+          phone: f.phone.value.trim() || undefined,
+          email: f.email.value.trim() || undefined,
+          website: f.website.value.trim() || undefined
+        }
+      };
+      
+      try {
+        const r = await post('/api/colleges', data);
+        if (r.success) {
+          showMessage(`College created successfully: ${r.data.name}`);
+          f.reset();
+          loadColleges();
+          loadCollegesList();
+          loadOverview();
+        } else {
+          showMessage(`Error: ${r.error}`, true);
+        }
+      } catch (error) {
+        showMessage(`Network error: ${error.message}`, true);
+      }
+    });
+
+    // HOD form submission
+    document.getElementById('hodForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const data = {name: f.name.value, email: f.email.value, password: f.password.value, collegeId: f.collegeId.value, departmentId: f.departmentId.value};
+      try {
+        const r = await post('/api/users/hod', data);
+        if (r.success) {
+          showMessage(`HOD created successfully: ${r.data.name}`);
+          f.reset();
+          loadOverview();
+        } else {
+          showMessage(`Error: ${r.error}`, true);
+        }
+      } catch (error) {
+        showMessage(`Network error: ${error.message}`, true);
+      }
+    });
+
+    // Faculty form submission
+    document.getElementById('facultyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const data = {name: f.name.value, email: f.email.value, password: f.password.value, collegeId: f.collegeId.value, departmentId: f.departmentId.value, classroomId: f.classroomId.value};
+      try {
+        const r = await post('/api/users/faculty', data);
+        if (r.success) {
+          showMessage(`Faculty created successfully: ${r.data.name}`);
+          f.reset();
+          loadOverview();
+        } else {
+          showMessage(`Error: ${r.error}`, true);
+        }
+      } catch (error) {
+        showMessage(`Network error: ${error.message}`, true);
+      }
+    });
+
+    // Student form submission
+    document.getElementById('studentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const data = {name: f.name.value, email: f.email.value, password: f.password.value, rollNo: f.rollNo.value, collegeId: f.collegeId.value, departmentId: f.departmentId.value, classroomId: f.classroomId.value};
+      try {
+        const r = await post('/api/users/student', data);
+        if (r.success) {
+          showMessage(`Student created successfully: ${r.data.name} (${r.data.rollNo})`);
+          f.reset();
+          loadOverview();
+        } else {
+          showMessage(`Error: ${r.error}`, true);
+        }
+      } catch (error) {
+        showMessage(`Network error: ${error.message}`, true);
+      }
+    });
+
+    // Initialize the page - check authentication first
+    if (checkAuthentication()) {
+      loadColleges();
+      loadCollegesList();
+      loadUsers();
+      loadOverview();
+    }
+  </script>
+</body>
+</html>

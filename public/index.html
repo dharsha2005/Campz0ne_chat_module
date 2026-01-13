@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampZone Chat Module - Test Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .controls {
+            padding: 20px;
+            background: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #357abd;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .chat-area {
+            display: flex;
+            height: 500px;
+        }
+
+        .rooms-panel {
+            width: 250px;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            background: #f9f9f9;
+        }
+
+        .room-item {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .room-item:hover {
+            background: #e9e9e9;
+        }
+
+        .room-item.active {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .messages-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            background: #f0f0f0;
+        }
+
+        .message.own {
+            background: #4a90e2;
+            color: white;
+            margin-left: 20%;
+        }
+
+        .message-header {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .message-content {
+            word-wrap: break-word;
+        }
+
+        .message-meta {
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.6;
+        }
+
+        .input-area {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            background: #f9f9f9;
+        }
+
+        .typing-indicator {
+            padding: 5px 15px;
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            min-height: 20px;
+            display: none;
+        }
+
+        .online-users {
+            padding: 10px 15px;
+            font-size: 12px;
+            color: #4a90e2;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .log {
+            padding: 20px;
+            background: #f9f9f9;
+            border-top: 1px solid #ddd;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid #4a90e2;
+            padding-left: 10px;
+        }
+
+        .log-entry.error {
+            border-left-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .log-entry.success {
+            border-left-color: #28a745;
+            color: #28a745;
+        }
+
+        /* Materials & Assignments Styles */
+        .material-item, .assignment-item {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: box-shadow 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .material-item:hover, .assignment-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        #materialsList, #assignmentsList {
+            width: 100%;
+        }
+
+        .material-title, .assignment-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .material-description, .assignment-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .material-meta, .assignment-meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .file-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: #4a90e2;
+            text-decoration: none;
+        }
+
+        .file-link:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .status-badge.submitted {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.overdue {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .form-section {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .form-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .submissions-list {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .submission-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .submission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .submission-student {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .submission-meta {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .grade-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .grade-input input {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .tab-button.active {
+            background: #f0f0f0;
+            border-bottom-color: #4a90e2;
+            color: #4a90e2;
+            font-weight: 600;
+        }
+
+        .tab-button:hover {
+            background: #f5f5f5;
+            color: #4a90e2;
+        }
+        
+        .tab-button:not(.active) {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CampZone Chat Module - Test Client</h1>
+        </div>
+
+        <!-- Access Info (shows how to reach this server) -->
+        <div id="accessInfo" style="padding:12px 20px; background:#fff7e6; border-top:1px solid #ffe8a1; border-bottom:1px solid #ffe8a1;">
+            <strong>Access URLs:</strong>
+            <div id="accessUrls" style="margin-top:8px; font-family: monospace; color:#333;"></div>
+            <div id="accessNotes" style="margin-top:8px; font-size:12px; color:#666;"></div>
+        </div>
+
+        <!-- Authentication Section -->
+        <div id="authSection" class="controls">
+            <h2 style="margin-bottom: 20px;">Authentication</h2>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="showLoginBtn" onclick="showLogin()" style="flex: 1; margin-top: 0;">Login</button>
+                <button id="showRegisterBtn" onclick="showRegister()" style="flex: 1; margin-top: 0; background: #6c757d;">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <div class="control-group">
+                    <label>Email:</label>
+                    <input type="email" id="loginEmail" placeholder="user@example.com">
+                </div>
+                <div class="control-group">
+                    <label>Password:</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password">
+                </div>
+                <button onclick="handleLogin()">Login</button>
+                <div id="loginStatus" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" style="display: none;">
+                <div class="control-group">
+                    <label>Name:</label>
+                    <input type="text" id="registerName" placeholder="John Doe">
+                </div>
+                <div class="control-group">
+                    <label>Email:</label>
+                    <input type="email" id="registerEmail" placeholder="user@example.com">
+                </div>
+                <div class="control-group">
+                    <label>Password:</label>
+                    <input type="password" id="registerPassword" placeholder="At least 6 characters">
+                </div>
+                <div class="control-group">
+                    <label>Role:</label>
+                    <select id="registerRole" onchange="handleRoleChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <option value="student" selected>Student</option>
+                        <option value="faculty">Faculty</option>
+                        <option value="hod">HOD (Head of Department)</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                        Select your role: Student (view materials), Faculty (manage subjects/materials), HOD (manage faculty), or Admin (full access)
+                    </small>
+                </div>
+                
+                <!-- Student-specific fields -->
+                <div id="studentFields" class="control-group">
+                    <label>Roll Number:</label>
+                    <input type="text" id="registerRollNo" placeholder="e.g., 23ITR030">
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                        Format: YYDEPT### (e.g., 23ITR030)
+                    </small>
+                </div>
+                
+                <!-- Department field for all roles -->
+                <div class="control-group">
+                    <label>Department ID:</label>
+                    <input type="text" id="registerDepartment" placeholder="e.g., CSE, IT, ECE">
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                        Department code (e.g., CSE for Computer Science)
+                    </small>
+                </div>
+                
+                <!-- College field for all roles -->
+                <div class="control-group">
+                    <label>College:</label>
+                    <select id="registerCollege" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <option value="">--Select College--</option>
+                    </select>
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                        Select your college (required for all roles)
+                    </small>
+                </div>
+                
+                <!-- Classroom field for faculty and students -->
+                <div id="classroomFields" class="control-group" style="display: none;">
+                    <label>Classroom/Section:</label>
+                    <input type="text" id="registerClassroom" placeholder="e.g., A1, B2, C3">
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                        Classroom or section (e.g., A1, B2, C3)
+                    </small>
+                </div>
+                
+                <button onclick="handleRegister()">Register</button>
+                <div id="registerStatus" style="margin-top: 10px;"></div>
+            </div>
+        </div>
+
+        <!-- Chat Controls (shown after authentication) -->
+        <div id="chatControls" class="controls" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div>
+                    <strong>Logged in as:</strong> <span id="userNameDisplay"></span> (<span id="userEmailDisplay"></span>)<span id="userRoleDisplay" style="font-weight: 600;"></span>
+                </div>
+                <button onclick="handleLogout()" style="width: auto; padding: 8px 16px; margin-top: 0; background: #dc3545;">Logout</button>
+            </div>
+            
+            <!-- Role-based Dashboard Navigation -->
+            <div id="dashboardNav" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e9ecef;">
+                <h4 style="margin: 0 0 10px 0; color: #495057;">📊 Role-Based Dashboards</h4>
+                <div id="dashboardButtons" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <!-- Dashboard buttons will be added dynamically based on role -->
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>Server URL:</label>
+                <input type="text" id="serverUrl" placeholder="http://localhost:3000" value="http://localhost:3000">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button id="connectBtn" onclick="connect()">Connect to Chat</button>
+                <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            </div>
+            <div id="status" class="status disconnected">Disconnected</div>
+        </div>
+
+        <div class="chat-area">
+            <div class="rooms-panel">
+                <div class="online-users" id="onlineUsers">Online: -</div>
+                <div class="room-item active" onclick="selectRoom('room1')" id="room-room1">
+                    Room 1 (Group)
+                </div>
+                <div class="room-item" onclick="selectRoom('room2')" id="room-room2">
+                    Room 2 (Group)
+                </div>
+            </div>
+
+            <div class="messages-panel">
+                <div style="display: flex; border-bottom: 1px solid #ddd; background: #fff;">
+                    <button id="tab-messages" class="tab-button active" onclick="showTab('messages')">Messages</button>
+                    <button id="tab-materials" class="tab-button" onclick="showTab('materials')">Materials</button>
+                    <button id="tab-assignments" class="tab-button" onclick="showTab('assignments')">Assignments</button>
+                </div>
+
+                <div id="tabContent" style="flex:1; display:flex; flex-direction:column; min-height: 0; overflow: hidden;">
+                    <div id="messagesTab" class="messages" style="display:flex; flex-direction: column; min-height: 0;">
+                        <div class="message">
+                            <div class="message-content">Please login to start chatting.</div>
+                        </div>
+                    </div>
+
+                    <div id="materialsTab" class="messages" style="display:none; padding:20px; overflow-y:auto; flex-direction: column; min-height: 0;">
+                        <div id="materialForm" class="form-section" style="display:none; margin-bottom: 20px; flex-shrink: 0;">
+                            <h3 style="margin-top: 0;">Post Material</h3>
+                            <div class="control-group">
+                                <label>Title:</label>
+                                <input type="text" id="materialTitle" placeholder="Enter material title" />
+                            </div>
+                            <div class="control-group">
+                                <label>Description:</label>
+                                <textarea id="materialDesc" placeholder="Enter description (optional)" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"></textarea>
+                            </div>
+                            <div class="control-group">
+                                <label>Upload Document (optional):</label>
+                                <input type="file" id="materialFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.zip,application/*" />
+                            </div>
+                            <div class="control-group">
+                                <label>Or File URL (optional):</label>
+                                <input type="text" id="materialFileUrl" placeholder="https://example.com/file.pdf (optional)" />
+                            </div>
+                            <button onclick="postMaterial()">Post Material</button>
+                        </div>
+                        <div id="materialFormNotice" style="display:none; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; margin-bottom: 20px; color: #856404; font-size: 14px;">
+                            <strong>Note:</strong> Only faculty and administrators can post materials.
+                        </div>
+                        <div id="materialsList" style="flex: 1; overflow-y: auto; min-height: 0; width: 100%;">
+                            <div style="text-align: center; color: #999; padding: 40px;">No materials yet.</div>
+                        </div>
+                    </div>
+
+                    <div id="assignmentsTab" class="messages" style="display:none; padding:20px; overflow-y:auto; flex-direction: column; min-height: 0;">
+                        <div id="assignmentForm" class="form-section" style="display:none; margin-bottom: 20px; flex-shrink: 0;">
+                            <h3 style="margin-top: 0;">Create Assignment</h3>
+                            <div class="control-group">
+                                <label>Title:</label>
+                                <input type="text" id="assignmentTitle" placeholder="Enter assignment title" />
+                            </div>
+                            <div class="control-group">
+                                <label>Description:</label>
+                                <textarea id="assignmentDesc" placeholder="Enter assignment description (optional)" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"></textarea>
+                            </div>
+                            <div class="control-group">
+                                <label>Due Date:</label>
+                                <input type="datetime-local" id="assignmentDue" />
+                            </div>
+                            <button onclick="createAssignment()">Create Assignment</button>
+                        </div>
+                        <div id="assignmentFormNotice" style="display:none; padding: 15px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; margin-bottom: 20px; color: #856404; font-size: 14px;">
+                            <strong>Note:</strong> Only faculty and administrators can create assignments.
+                        </div>
+                        <div id="assignmentsList" style="flex: 1; overflow-y: auto; min-height: 0; width: 100%;">
+                            <div style="text-align: center; color: #999; padding: 40px;">No assignments yet.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="typing-indicator" id="typingIndicator"></div>
+                <div class="input-area">
+                    <div id="replyContext" style="display:none; padding:8px; background:#f8f9fa; border:1px solid #e0e0e0; border-radius:6px; margin-bottom:8px;">
+                        <small>Replying to:</small>
+                        <div id="replySnippet" style="font-size:13px; color:#333; margin-top:4px;"></div>
+                        <button onclick="clearReply()" style="margin-top:6px; padding:6px 8px; background:#fff; border:1px solid #ccc; border-radius:4px; cursor:pointer;">Cancel Reply</button>
+                    </div>
+                    <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                    <button onclick="sendMessage()">Send Message</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="log" id="log">
+            <div class="log-entry">Ready to connect...</div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = null;
+        let currentRoom = 'room1';
+        let currentUserId = null; // Will be set after login
+        let currentUserData = null; // Store user data after login
+        let lamportClock = 0; // Client-side Lamport clock
+        const API_URL = 'http://localhost:3000/api/auth';
+
+        // Initialize rooms (you'll need to create these in your database)
+        const rooms = [
+            { roomId: 'room1', roomName: 'Room 1', roomType: 'group' },
+            { roomId: 'room2', roomName: 'Room 2', roomType: 'group' }
+        ];
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Load colleges for dropdown
+        async function loadColleges() {
+            try {
+                const response = await fetch('http://localhost:3000/api/public/colleges', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                const collegeSelect = document.getElementById('registerCollege');
+                
+                if (response.ok && data.success && Array.isArray(data.data)) {
+                    collegeSelect.innerHTML = '<option value="">--Select College--</option>';
+                    data.data.forEach(college => {
+                        const option = document.createElement('option');
+                        option.value = college._id;
+                        option.textContent = `${college.name} (${college.code})`;
+                        collegeSelect.appendChild(option);
+                    });
+                    console.log('✅ Colleges loaded:', data.data.length, 'colleges');
+                } else {
+                    console.error('Failed to load colleges:', data.error || 'Unknown error');
+                    // Fallback: Add Kongu Engineering College manually
+                    const collegeSelect = document.getElementById('registerCollege');
+                    collegeSelect.innerHTML = '<option value="">--Select College--</option>';
+                    const option = document.createElement('option');
+                    option.value = '6956a49c8f3b45f0bcbbc9b7';
+                    option.textContent = 'Kongu Engineering College (KEC)';
+                    collegeSelect.appendChild(option);
+                    console.log('⚠️ Added Kongu Engineering College manually as fallback');
+                }
+            } catch (error) {
+                console.error('Error loading colleges:', error);
+                // Fallback: Add Kongu Engineering College manually
+                const collegeSelect = document.getElementById('registerCollege');
+                collegeSelect.innerHTML = '<option value="">--Select College--</option>';
+                const option = document.createElement('option');
+                option.value = '6956a49c8f3b45f0bcbbc9b7';
+                option.textContent = 'Kongu Engineering College (KEC)';
+                collegeSelect.appendChild(option);
+                console.log('⚠️ Added Kongu Engineering College manually due to error');
+            }
+        }
+
+        // Authentication Functions
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('showLoginBtn').style.background = '#4a90e2';
+            document.getElementById('showRegisterBtn').style.background = '#6c757d';
+            document.getElementById('loginStatus').textContent = '';
+            document.getElementById('registerStatus').textContent = '';
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            document.getElementById('showLoginBtn').style.background = '#6c757d';
+            document.getElementById('showRegisterBtn').style.background = '#4a90e2';
+            document.getElementById('loginStatus').textContent = '';
+            document.getElementById('registerStatus').textContent = '';
+            // Initialize role-based field visibility
+            handleRoleChange();
+            // Load colleges for dropdown
+            loadColleges();
+        }
+
+        function handleRoleChange() {
+            const role = document.getElementById('registerRole').value;
+            const studentFields = document.getElementById('studentFields');
+            const classroomFields = document.getElementById('classroomFields');
+            
+            // Show/hide roll number field for students
+            if (role === 'student') {
+                studentFields.style.display = 'block';
+            } else {
+                studentFields.style.display = 'none';
+            }
+            
+            // Show/hide classroom field for faculty and students
+            if (role === 'faculty' || role === 'student') {
+                classroomFields.style.display = 'block';
+            } else {
+                classroomFields.style.display = 'none';
+            }
+        }
+
+        async function handleRegister() {
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const role = document.getElementById('registerRole').value;
+            const rollNo = document.getElementById('registerRollNo').value.trim();
+            const departmentId = document.getElementById('registerDepartment').value.trim();
+            const collegeId = document.getElementById('registerCollege').value.trim();
+            const classroomId = document.getElementById('registerClassroom').value.trim();
+            const statusDiv = document.getElementById('registerStatus');
+
+            console.log('=== Registration Debug ===');
+            console.log('Name:', name);
+            console.log('Email:', email);
+            console.log('Password:', password ? '***' : 'empty');
+            console.log('Role selected:', role);
+            console.log('Roll No:', rollNo || 'empty');
+            console.log('Department:', departmentId || 'empty');
+            console.log('College:', collegeId || 'empty');
+            console.log('Classroom:', classroomId || 'empty');
+            console.log('College Select Element:', document.getElementById('registerCollege'));
+            console.log('College Select Value:', document.getElementById('registerCollege').value);
+            console.log('College Select Options:', document.getElementById('registerCollege').innerHTML);
+
+            if (!name || !email || !password || !departmentId || !collegeId) {
+                statusDiv.textContent = 'Please fill in all required fields';
+                statusDiv.style.color = '#dc3545';
+                console.log('❌ Missing required fields');
+                return;
+            }
+
+            if (role === 'student' && !rollNo) {
+                statusDiv.textContent = 'Roll number is required for students';
+                statusDiv.style.color = '#dc3545';
+                console.log('❌ Roll number required for student');
+                return;
+            }
+
+            if (password.length < 6) {
+                statusDiv.textContent = 'Password must be at least 6 characters';
+                statusDiv.style.color = '#dc3545';
+                console.log('❌ Password too short');
+                return;
+            }
+
+            try {
+                statusDiv.textContent = 'Registering...';
+                statusDiv.style.color = '#666';
+                console.log('🚀 Starting registration...');
+
+                const requestBody = { name, email, password, role, departmentId, collegeId };
+                if (role === 'student') {
+                    requestBody.rollNo = rollNo;
+                }
+                if (classroomId) {
+                    requestBody.classroomId = classroomId;
+                }
+                console.log('📤 Sending registration request:', { ...requestBody, password: '***' });
+
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                console.log('📥 Registration response:', data);
+
+                if (response.ok && data.success) {
+                    const roleText = data.data.role ? ` as ${data.data.role}` : '';
+                    console.log('✅ Registration successful! Role received:', data.data.role);
+                    statusDiv.textContent = `Registration successful${roleText}! Please login.`;
+                    statusDiv.style.color = '#28a745';
+                    log(`Registration successful${roleText}`, 'success');
+                    
+                    // Clear form and switch to login
+                    document.getElementById('registerName').value = '';
+                    document.getElementById('registerEmail').value = '';
+                    document.getElementById('registerPassword').value = '';
+                    document.getElementById('registerRole').value = 'student';
+                    document.getElementById('registerRollNo').value = '';
+                    document.getElementById('registerDepartment').value = '';
+                    document.getElementById('registerCollege').value = '';
+                    document.getElementById('registerClassroom').value = '';
+                    handleRoleChange(); // Reset field visibility
+                    
+                    setTimeout(() => {
+                        showLogin();
+                        document.getElementById('loginEmail').value = email;
+                    }, 1500);
+                } else {
+                    console.log('❌ Registration failed:', data.error);
+                    statusDiv.textContent = data.error || 'Registration failed';
+                    statusDiv.style.color = '#dc3545';
+                    log(`Registration error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.log('❌ Registration error:', error);
+                statusDiv.textContent = 'Registration failed. Please try again.';
+                statusDiv.style.color = '#dc3545';
+                log(`Registration error: ${error.message}`, 'error');
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const statusDiv = document.getElementById('loginStatus');
+
+            if (!email || !password) {
+                statusDiv.textContent = 'Please enter email and password';
+                statusDiv.style.color = '#dc3545';
+                return;
+            }
+
+            try {
+                statusDiv.textContent = 'Logging in...';
+                statusDiv.style.color = '#666';
+
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Store user data in localStorage for dashboard access
+                    localStorage.setItem('token', data.data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.data));
+                    
+                    // Store user data in memory
+                    currentUserData = data.data;
+                    currentUserId = data.data.userId;
+
+                    // Update UI
+                    document.getElementById('authSection').style.display = 'none';
+                    document.getElementById('chatControls').style.display = 'block';
+                    document.getElementById('userNameDisplay').textContent = data.data.name;
+                    document.getElementById('userEmailDisplay').textContent = data.data.email;
+                    
+                    // Display role in UI
+                    const roleDisplay = document.getElementById('userRoleDisplay');
+                    if (roleDisplay) {
+                        roleDisplay.textContent = ` (${data.data.role || 'student'})`;
+                        roleDisplay.style.color = data.data.role === 'admin' ? '#dc3545' : (data.data.role === 'faculty' ? '#4a90e2' : '#666');
+                    }
+
+                    // Show role-based dashboard navigation
+                    showDashboardNavigation(data.data.role);
+
+                    statusDiv.textContent = '';
+                    log(`Login successful: ${data.data.name} (${data.data.email}) - Role: ${data.data.role || 'student'}`, 'success');
+                    console.log('User logged in - Role:', data.data.role, 'Full data:', data.data);
+                    console.log('currentUserData stored:', currentUserData);
+                    console.log('Token saved to localStorage:', data.data.token);
+                    
+                    // If already on materials/assignments tab, refresh form visibility
+                    const activeTab = document.querySelector('.tab-button.active');
+                    if (activeTab) {
+                        const tabName = activeTab.id.replace('tab-', '');
+                        if (tabName === 'materials' || tabName === 'assignments') {
+                            showTab(tabName);
+                        }
+                    }
+                } else {
+                    statusDiv.textContent = data.error || 'Login failed';
+                    statusDiv.style.color = '#dc3545';
+                    log(`Login error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                statusDiv.textContent = 'Login failed. Please try again.';
+                statusDiv.style.color = '#dc3545';
+                log(`Login error: ${error.message}`, 'error');
+            }
+        }
+
+        function handleLogout() {
+            // Disconnect socket if connected
+            if (socket) {
+                disconnect();
+            }
+
+            // Clear user data from memory and localStorage
+            currentUserId = null;
+            currentUserData = null;
+            lamportClock = 0;
+            localStorage.removeItem('token');
+            localStorage.removeItem('currentUser');
+
+            // Reset UI
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('chatControls').style.display = 'none';
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginStatus').textContent = '';
+            document.getElementById('registerStatus').textContent = '';
+            
+            // Clear messages
+            document.getElementById('messagesTab').innerHTML = '<div class="message"><div class="message-content">Please login to start chatting.</div></div>';
+
+            log('Logged out', 'info');
+        }
+
+        function showDashboardNavigation(role) {
+            const dashboardButtons = document.getElementById('dashboardButtons');
+            dashboardButtons.innerHTML = '';
+            
+            const dashboards = {
+                'admin': [
+                    { name: '🎓 Admin Dashboard', url: '/admin.html', description: 'Manage HODs, Faculty, and Students' }
+                ],
+                'hod': [
+                    { name: '👔 HOD Dashboard', url: '/hod.html', description: 'Manage Faculty in your department' }
+                ],
+                'faculty': [
+                    { name: '👨‍🏫 Faculty Dashboard', url: '/faculty.html', description: 'Manage Subjects and Materials' }
+                ],
+                'student': [
+                    { name: '🎓 Student Dashboard', url: '/student.html', description: 'View Materials and Assignments' }
+                ]
+            };
+            
+            const userDashboards = dashboards[role] || dashboards['student'];
+            
+            userDashboards.forEach(dashboard => {
+                const button = document.createElement('button');
+                button.textContent = dashboard.name;
+                button.style.cssText = `
+                    background: ${role === 'admin' ? '#007bff' : role === 'hod' ? '#28a745' : role === 'faculty' ? '#6f42c1' : '#17a2b8'};
+                    color: white;
+                    padding: 10px 16px;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    text-decoration: none;
+                    display: inline-block;
+                    margin: 0;
+                `;
+                button.title = dashboard.description;
+                button.onclick = () => {
+                    window.open(dashboard.url, '_blank');
+                };
+                dashboardButtons.appendChild(button);
+            });
+        }
+
+        function connect() {
+            if (!currentUserId) {
+                alert('Please login first');
+                return;
+            }
+
+            const serverUrl = document.getElementById('serverUrl').value || 'http://localhost:3000';
+            lamportClock = 0; // Reset clock
+
+            socket = io(serverUrl, {
+                auth: { userId: currentUserId },
+                query: { userId: currentUserId }
+            });
+
+            socket.on('connect', () => {
+                log('Connected to server', 'success');
+                document.getElementById('status').textContent = 'Connected';
+                document.getElementById('status').className = 'status connected';
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = false;
+                
+                // Join current room
+                joinRoom(currentRoom);
+            });
+
+            socket.on('disconnect', () => {
+                log('Disconnected from server', 'error');
+                document.getElementById('status').textContent = 'Disconnected';
+                document.getElementById('status').className = 'status disconnected';
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+                
+                // Clear typing indicators
+                typingUsers.clear();
+                document.getElementById('typingIndicator').textContent = '';
+                document.getElementById('typingIndicator').style.display = 'none';
+            });
+
+            socket.on('connected', (data) => {
+                log(`Server confirmed connection: ${JSON.stringify(data)}`, 'success');
+            });
+
+            socket.on('error', (error) => {
+                log(`Error: ${error.message}`, 'error');
+            });
+
+            socket.on('joined_room', (data) => {
+                log(`Joined room: ${data.roomId}`, 'success');
+            });
+
+            socket.on('new_message', (data) => {
+                log(`New message received: ${data.content}`, 'info');
+                addMessage(data);
+            });
+
+            socket.on('message_sent', (data) => {
+                log(`Message sent: ${data.status}`, 'success');
+            });
+
+            socket.on('user_typing', (data) => {
+                updateTypingIndicator(data);
+            });
+
+            socket.on('read_receipt', (data) => {
+                log(`Read receipt: User ${data.userId} read message ${data.messageId}`, 'info');
+            });
+
+            socket.on('online_users', (data) => {
+                document.getElementById('onlineUsers').textContent = `Online: ${data.count} users`;
+            });
+
+            socket.on('user_joined', (data) => {
+                log(`User ${data.userId} joined room ${data.roomId}`, 'info');
+            });
+
+            socket.on('user_left', (data) => {
+                log(`User ${data.userId} left room ${data.roomId}`, 'info');
+            });
+
+            socket.on('user_presence_update', (data) => {
+                log(`User ${data.userId} is now ${data.isOnline ? 'online' : 'offline'}`, 'info');
+                // Update online users display if in a room
+                if (currentRoom && socket && socket.connected) {
+                    socket.emit('get_online_users', { roomId: currentRoom });
+                }
+            });
+
+            socket.on('messages', (data) => {
+                log(`Received ${data.messages.length} messages`, 'info');
+                displayMessages(data.messages);
+            });
+
+            // Materials & Assignments realtime events
+            socket.on('material_posted', (data) => {
+                log(`Material posted: ${data.title}`, 'info');
+                if (currentRoom === data.chatRoomId) {
+                    fetchMaterials();
+                }
+            });
+
+            socket.on('assignment_created', (data) => {
+                log(`Assignment created: ${data.title}`, 'info');
+                if (currentRoom === data.chatRoomId) {
+                    fetchAssignments();
+                }
+            });
+
+            socket.on('assignment_submitted', (data) => {
+                log(`Assignment submitted by ${data.studentId}`, 'info');
+                if (currentRoom === data.chatRoomId) {
+                    fetchAssignments();
+                }
+            });
+
+            socket.on('submission_graded', (data) => {
+                log(`Submission graded for assignment ${data.assignmentId}`, 'info');
+                if (currentRoom === data.chatRoomId) {
+                    // Refresh submissions view if open
+                    const assignmentDiv = document.getElementById(`assignment-${data.assignmentId}`);
+                    if (assignmentDiv) {
+                        const submissionsDiv = document.getElementById(`submissions-${data.assignmentId}`);
+                        if (submissionsDiv && submissionsDiv.style.display === 'block') {
+                            viewSubmissions(data.assignmentId);
+                        }
+                    }
+                }
+            });
+
+            socket.on('notification', (data) => {
+                log(`Notification: ${data.type} - ${data.message}`, 'info');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        }
+
+        function selectRoom(roomId) {
+            if (!socket || !socket.connected) {
+                alert('Please connect first');
+                return;
+            }
+
+            // Stop typing in current room
+            if (currentRoom && socket && socket.connected) {
+                socket.emit('typing_stop', { roomId: currentRoom });
+            }
+
+            // Clear typing users when switching rooms
+            typingUsers.clear();
+            document.getElementById('typingIndicator').textContent = '';
+            document.getElementById('typingIndicator').style.display = 'none';
+
+            // Leave current room
+            if (currentRoom) {
+                socket.emit('leave_room', { roomId: currentRoom });
+            }
+
+            // Update UI
+            document.querySelectorAll('.room-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById(`room-${roomId}`).classList.add('active');
+
+            currentRoom = roomId;
+            joinRoom(roomId);
+        }
+
+        function joinRoom(roomId) {
+            if (!socket || !socket.connected) {
+                return;
+            }
+
+            socket.emit('join_room', {
+                roomId,
+                userId: currentUserId
+            });
+
+            // Clear messages
+            document.getElementById('messagesTab').innerHTML = '';
+
+            // Load messages
+            socket.emit('get_messages', { roomId, limit: 50 });
+
+            // Get online users
+            socket.emit('get_online_users', { roomId });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+
+            if (!content || !socket || !socket.connected) {
+                return;
+            }
+
+            // Stop typing indicator when sending message
+            if (socket && socket.connected) {
+                socket.emit('typing_stop', { roomId: currentRoom });
+            }
+
+            // Increment Lamport clock before sending
+            lamportClock += 1;
+            const idempotencyKey = `${currentUserId}-${Date.now()}-${Math.random()}`;
+
+            const payload = {
+                roomId: currentRoom,
+                content,
+                lamportTimestamp: lamportClock,
+                idempotencyKey
+            };
+            if (window.currentReply && window.currentReply.messageId) {
+                payload.replyTo = window.currentReply.messageId;
+                payload.replySnippet = window.currentReply.snippet || '';
+            }
+
+            socket.emit('send_message', payload);
+
+            input.value = '';
+            // Clear any reply context after sending
+            clearReply();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function addMessage(data) {
+            const messagesDiv = document.getElementById('messagesTab');
+            const messageDiv = document.createElement('div');
+            const msgId = data.messageId || data._id || data._id?._id || '';
+            messageDiv.className = `message ${data.senderId === currentUserId ? 'own' : ''}`;
+            
+            let contentHtml = '';
+            // If this message is a reply, render the quoted snippet first (include sender name when available)
+            // Support structured `replyTo` object from server: { messageId, senderName, previewText }
+            let replyObj = null;
+            if (data.replyTo && typeof data.replyTo === 'object') {
+                replyObj = data.replyTo;
+            } else if (data.replyTo) {
+                // backward compatibility: replyTo may be an id and server sent replySnippet/replyToSenderName
+                replyObj = { messageId: data.replyTo, senderName: data.replyToSenderName, previewText: data.replySnippet };
+            } else if (data.replySnippet || data.replyToSenderName) {
+                replyObj = { messageId: null, senderName: data.replyToSenderName, previewText: data.replySnippet };
+            }
+
+            if (replyObj) {
+                const rawSnippet = replyObj.previewText ? replyObj.previewText : (replyObj.messageId ? `Reply to: ${String(replyObj.messageId).substring(0,8)}` : 'Reply');
+                const displaySnippet = replyObj.senderName ? `${replyObj.senderName}: ${rawSnippet}` : rawSnippet;
+                contentHtml += `<div style="border-left:3px solid #ddd;padding-left:8px;margin-bottom:6px;color:#444;font-size:13px;background:#fafafa;border-radius:4px;">${escapeHtml(displaySnippet)}</div>`;
+            }
+
+            if (data.messageType === 'image' && data.fileUrl) {
+                contentHtml = `<img src="${escapeHtml(data.fileUrl)}" alt="${escapeHtml(data.fileName || 'Image')}" style="max-width: 100%; border-radius: 4px;" />`;
+                if (data.content) {
+                    contentHtml += `<div style="margin-top: 5px;">${escapeHtml(data.content)}</div>`;
+                }
+            } else if (data.messageType === 'file' && data.fileUrl) {
+                contentHtml = `<div><a href="${escapeHtml(data.fileUrl)}" target="_blank">📎 ${escapeHtml(data.fileName || 'File')}</a></div>`;
+                if (data.content) {
+                    contentHtml += `<div style="margin-top: 5px;">${escapeHtml(data.content)}</div>`;
+                }
+            } else {
+                contentHtml += `<div class="message-content">${escapeHtml(data.content)}</div>`;
+            }
+            const replySnippetPayload = replyObj ? (replyObj.senderName ? `${replyObj.senderName}: ${replyObj.previewText || ''}` : (replyObj.previewText || '')) : '';
+            const replyButtonHtml = `<button class="reply-btn" style="margin-top:6px;padding:6px 8px;border-radius:4px;border:1px solid #ccc;background:#fff;cursor:pointer;" onclick="setReply('${msgId}', '${(replySnippetPayload||'').replace(/'/g, "\\'").replace(/"/g, '\\"')}')">Reply</button>`;
+
+            messageDiv.innerHTML = `
+                <div class="message-header">${escapeHtml(data.senderName || data.senderId)}</div>
+                ${contentHtml}
+                <div class="message-meta">
+                    ${data.messageType !== 'text' ? `<span style="text-transform: uppercase; font-size: 10px;">${data.messageType}</span> | ` : ''}
+                    Lamport: ${data.lamportTimestamp} | 
+                    ${new Date(data.createdAt).toLocaleTimeString()}
+                </div>
+                ${replyButtonHtml}
+            `;
+
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function displayMessages(messages) {
+            const messagesDiv = document.getElementById('messagesTab');
+            messagesDiv.innerHTML = '';
+
+            // Pass full message object to addMessage so reply fields and ids are preserved
+            messages.forEach(msg => {
+                addMessage(msg);
+            });
+        }
+
+        // Track typing users
+        let typingUsers = new Set();
+
+        // Reply context (set when user clicks Reply on a message)
+        window.currentReply = null;
+
+        function setReply(messageId, snippet) {
+            window.currentReply = { messageId, snippet };
+            const ctx = document.getElementById('replyContext');
+            const sn = document.getElementById('replySnippet');
+            if (ctx && sn) {
+                sn.textContent = snippet || '';
+                ctx.style.display = 'block';
+            }
+            const input = document.getElementById('messageInput');
+            if (input) {
+                input.focus();
+                // Place cursor at the end
+                input.setSelectionRange(input.value.length, input.value.length);
+            }
+        }
+
+        function clearReply() {
+            window.currentReply = null;
+            const ctx = document.getElementById('replyContext');
+            const sn = document.getElementById('replySnippet');
+            if (ctx && sn) {
+                sn.textContent = '';
+                ctx.style.display = 'none';
+            }
+        }
+
+        // Expose to global scope for inline handlers
+        window.setReply = setReply;
+        window.clearReply = clearReply;
+
+        // UI Tab handling
+        function showTab(tab) {
+            console.log('Switching to tab:', tab);
+            
+            // Update tab button states
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            const tabButton = document.getElementById(`tab-${tab}`);
+            if (tabButton) {
+                tabButton.classList.add('active');
+            } else {
+                console.error('Tab button not found:', `tab-${tab}`);
+            }
+
+            // Show/hide tab content
+            const messagesTab = document.getElementById('messagesTab');
+            const materialsTab = document.getElementById('materialsTab');
+            const assignmentsTab = document.getElementById('assignmentsTab');
+            
+            if (messagesTab) {
+                messagesTab.style.display = tab === 'messages' ? 'flex' : 'none';
+            }
+            if (materialsTab) {
+                materialsTab.style.display = tab === 'materials' ? 'flex' : 'none';
+                console.log('Materials tab display set to:', tab === 'materials' ? 'flex' : 'none');
+            }
+            if (assignmentsTab) {
+                assignmentsTab.style.display = tab === 'assignments' ? 'flex' : 'none';
+            }
+
+            // Show/hide message input area (only for messages tab)
+            const inputArea = document.querySelector('.input-area');
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (inputArea) inputArea.style.display = tab === 'messages' ? 'block' : 'none';
+            if (typingIndicator) typingIndicator.style.display = tab === 'messages' ? 'block' : 'none';
+
+            // Show/hide forms based on role
+            console.log('=== showTab Debug ===');
+            console.log('currentUserData:', currentUserData);
+            console.log('currentUserData.role:', currentUserData?.role);
+            console.log('tab:', tab);
+            
+            const userRole = currentUserData?.role;
+            const isFaculty = userRole === 'faculty' || userRole === 'admin';
+            
+            console.log('userRole:', userRole);
+            console.log('isFaculty:', isFaculty);
+            console.log('Role check - faculty:', userRole === 'faculty', 'admin:', userRole === 'admin');
+            
+            const materialForm = document.getElementById('materialForm');
+            const assignmentForm = document.getElementById('assignmentForm');
+            
+            if (materialForm) {
+                const shouldShow = tab === 'materials' && isFaculty;
+                materialForm.style.display = shouldShow ? 'block' : 'none';
+                console.log('Material form - shouldShow:', shouldShow, 'display:', materialForm.style.display);
+                if (!shouldShow && tab === 'materials') {
+                    console.warn('Material form NOT showing. Reasons:');
+                    console.warn('  - tab === materials?', tab === 'materials');
+                    console.warn('  - isFaculty?', isFaculty);
+                    console.warn('  - userRole?', userRole);
+                }
+            } else {
+                console.error('Material form element not found!');
+            }
+            
+            // Show notice for non-faculty users
+            const materialNotice = document.getElementById('materialFormNotice');
+            if (materialNotice) {
+                materialNotice.style.display = (tab === 'materials' && !isFaculty) ? 'block' : 'none';
+            }
+            
+            if (assignmentForm) {
+                const shouldShow = tab === 'assignments' && isFaculty;
+                assignmentForm.style.display = shouldShow ? 'block' : 'none';
+                console.log('Assignment form - shouldShow:', shouldShow, 'display:', assignmentForm.style.display);
+                if (!shouldShow && tab === 'assignments') {
+                    console.warn('Assignment form NOT showing. Reasons:');
+                    console.warn('  - tab === assignments?', tab === 'assignments');
+                    console.warn('  - isFaculty?', isFaculty);
+                    console.warn('  - userRole?', userRole);
+                }
+            } else {
+                console.error('Assignment form element not found!');
+            }
+            
+            // Show notice for non-faculty users
+            const assignmentNotice = document.getElementById('assignmentFormNotice');
+            if (assignmentNotice) {
+                assignmentNotice.style.display = (tab === 'assignments' && !isFaculty) ? 'block' : 'none';
+            }
+            
+            console.log('=== End showTab Debug ===');
+
+            // Load materials or assignments when switching
+            if (tab === 'materials') {
+                console.log('Loading materials...');
+                fetchMaterials();
+            }
+            if (tab === 'assignments') {
+                console.log('Loading assignments...');
+                fetchAssignments();
+            }
+        }
+
+        async function fetchMaterials() {
+            if (!currentUserData || !currentUserData.token) {
+                console.log('fetchMaterials: No user data or token');
+                return;
+            }
+            const server = document.getElementById('serverUrl').value || 'http://localhost:3000';
+            const list = document.getElementById('materialsList');
+            if (!list) {
+                console.error('materialsList element not found');
+                return;
+            }
+            
+            try {
+                console.log('Fetching materials for room:', currentRoom);
+                const res = await fetch(`${server}/api/chats/${currentRoom}/materials`, {
+                    headers: { 'Authorization': `Bearer ${currentUserData.token}` }
+                });
+                const json = await res.json();
+                console.log('Materials response:', json);
+                
+                if (res.ok && json.success) {
+                    if (!json.data || json.data.length === 0) {
+                        list.innerHTML = '<div style="text-align: center; color: #999; padding: 40px;">No materials yet.</div>';
+                        return;
+                    }
+                    list.innerHTML = '';
+                    json.data.forEach(m => {
+                        const div = document.createElement('div');
+                        div.className = 'material-item';
+                        const date = new Date(m.createdAt).toLocaleString();
+                        div.innerHTML = `
+                            <div class="material-title">${escapeHtml(m.title)}</div>
+                            ${m.description ? `<div class="material-description">${escapeHtml(m.description)}</div>` : ''}
+                            ${m.fileUrl ? `<a href="${escapeHtml(m.fileUrl)}" target="_blank" class="file-link">📎 View File</a>` : ''}
+                            <div class="material-meta">Uploaded by ${escapeHtml(m.uploadedBy)} • ${date}</div>
+                        `;
+                        list.appendChild(div);
+                    });
+                } else {
+                    list.innerHTML = `<div style="color: #dc3545; padding: 20px;">${json.error || 'Failed to load materials.'}</div>`;
+                    log(`Failed to load materials: ${json.error}`, 'error');
+                }
+            } catch (err) {
+                list.innerHTML = '<div style="color: #dc3545; padding: 20px;">Failed to load materials. Check console for details.</div>';
+                console.error('fetchMaterials error:', err);
+                log(`fetchMaterials error: ${err.message}`, 'error');
+            }
+        }
+
+        async function postMaterial() {
+            if (!currentUserData || !currentUserData.token) {
+                alert('Please login');
+                return;
+            }
+            const title = document.getElementById('materialTitle').value.trim();
+            const description = document.getElementById('materialDesc').value.trim();
+            const fileUrl = document.getElementById('materialFileUrl').value.trim();
+            if (!title) {
+                alert('Title is required');
+                return;
+            }
+            const server = document.getElementById('serverUrl').value || 'http://localhost:3000';
+            try {
+                const fileInput = document.getElementById('materialFile');
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('description', description);
+                if (fileInput && fileInput.files && fileInput.files[0]) {
+                    formData.append('materialFile', fileInput.files[0]);
+                } else if (fileUrl) {
+                    formData.append('fileUrl', fileUrl);
+                }
+
+                const res = await fetch(`${server}/api/chats/${currentRoom}/materials`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${currentUserData.token}` },
+                    body: formData
+                });
+                const json = await res.json();
+                if (res.ok && json.success) {
+                    document.getElementById('materialTitle').value = '';
+                    document.getElementById('materialDesc').value = '';
+                    document.getElementById('materialFileUrl').value = '';
+                    if (fileInput) fileInput.value = '';
+                    fetchMaterials();
+                    log('Material posted successfully', 'success');
+                } else {
+                    alert(json.error || 'Failed to post material');
+                    log(`Failed to post material: ${json.error}`, 'error');
+                }
+            } catch (err) {
+                alert('Failed to post material. Please try again.');
+                log(`postMaterial error: ${err.message}`, 'error');
+            }
+        }
+
+        async function fetchAssignments() {
+            if (!currentUserData || !currentUserData.token) return;
+            const server = document.getElementById('serverUrl').value || 'http://localhost:3000';
+            const isFaculty = currentUserData.role === 'faculty' || currentUserData.role === 'admin';
+            try {
+                const res = await fetch(`${server}/api/chats/${currentRoom}/assignments`, {
+                    headers: { 'Authorization': `Bearer ${currentUserData.token}` }
+                });
+                const json = await res.json();
+                const list = document.getElementById('assignmentsList');
+                if (res.ok && json.success) {
+                    if (!json.data || json.data.length === 0) {
+                        list.innerHTML = '<div style="text-align: center; color: #999; padding: 40px;">No assignments yet.</div>';
+                        return;
+                    }
+                    list.innerHTML = '';
+                    for (const a of json.data) {
+                        const div = document.createElement('div');
+                        div.className = 'assignment-item';
+                        div.id = `assignment-${a._id}`;
+                        
+                        const dueDate = a.dueDate ? new Date(a.dueDate) : null;
+                        const isOverdue = dueDate && new Date() > dueDate;
+                        const dueText = dueDate ? `Due: ${dueDate.toLocaleString()}` : 'No due date';
+                        
+                        let statusBadge = '';
+                        let submissionInfo = '';
+                        let actionButtons = '';
+                        
+                        if (isFaculty) {
+                            // Faculty view: show submissions count and view button
+                            actionButtons = `<button onclick="viewSubmissions('${a._id}')" style="margin-top: 10px;">View Submissions</button>`;
+                        } else {
+                            // Student view: show submission status
+                            const status = a.submissionStatus || 'pending';
+                            const statusClass = status === 'submitted' ? 'submitted' : (isOverdue ? 'overdue' : 'pending');
+                            statusBadge = `<span class="status-badge ${statusClass}">${status === 'submitted' ? 'Submitted' : (isOverdue ? 'Overdue' : 'Pending')}</span>`;
+                            
+                            if (a.submission) {
+                                submissionInfo = `
+                                    <div style="margin-top: 8px; font-size: 12px; color: #28a745;">
+                                        ✓ Submitted on ${new Date(a.submission.submittedAt).toLocaleString()}
+                                        ${a.submission.marks !== undefined && a.submission.marks !== null ? ` • Grade: ${a.submission.marks}` : ''}
+                                    </div>
+                                `;
+                                actionButtons = `<button onclick="resubmitAssignment('${a._id}')" style="margin-top: 10px;">Resubmit</button>`;
+                            } else {
+                                actionButtons = `
+                                    <div style="margin-top: 10px;">
+                                        <button onclick="showSubmit('${a._id}')">Submit Assignment</button>
+                                    </div>
+                                    <div id="submit-${a._id}" style="margin-top: 10px; display: none;"></div>
+                                `;
+                            }
+                        }
+                        
+                        div.innerHTML = `
+                            <div class="assignment-title">
+                                ${escapeHtml(a.title)}
+                                ${statusBadge}
+                            </div>
+                            ${a.description ? `<div class="assignment-description">${escapeHtml(a.description)}</div>` : ''}
+                            <div class="assignment-meta">
+                                ${dueText}
+                                ${isOverdue ? ' <span style="color: #dc3545;">(Overdue)</span>' : ''}
+                            </div>
+                            ${submissionInfo}
+                            ${actionButtons}
+                            <div id="submissions-${a._id}" class="submissions-list" style="display: none;"></div>
+                        `;
+                        list.appendChild(div);
+                    }
+                } else {
+                    list.innerHTML = `<div style="color: #dc3545; padding: 20px;">${json.error || 'Failed to load assignments.'}</div>`;
+                }
+            } catch (err) {
+                document.getElementById('assignmentsList').innerHTML = '<div style="color: #dc3545; padding: 20px;">Failed to load assignments.</div>';
+                log(`fetchAssignments error: ${err.message}`, 'error');
+            }
+        }
+
+        function showSubmit(assignmentId) {
+            const container = document.getElementById(`submit-${assignmentId}`);
+            if (!container) return;
+            container.style.display = 'block';
+            container.innerHTML = `
+                <div style="background: white; padding: 15px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Submission File URL:</label>
+                    <input type="text" id="submitUrl-${assignmentId}" placeholder="https://example.com/submission.pdf" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;" />
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="submitAssignment('${assignmentId}')">Submit</button>
+                        <button onclick="cancelSubmit('${assignmentId}')" style="background: #6c757d;">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function cancelSubmit(assignmentId) {
+            const container = document.getElementById(`submit-${assignmentId}`);
+            if (container) {
+                container.style.display = 'none';
+                container.innerHTML = '';
+            }
+        }
+
+        async function submitAssignment(assignmentId) {
+            const urlInput = document.getElementById(`submitUrl-${assignmentId}`);
+            if (!urlInput) return;
+            const url = urlInput.value.trim();
+            if (!url) {
+                alert('File URL is required');
+                return;
+            }
+            const server = document.getElementById('serverUrl').value || 'http://localhost:3000';
+            try {
+                const res = await fetch(`${server}/api/assignments/${assignmentId}/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUserData.token}` },
+                    body: JSON.stringify({ fileUrl: url })
+                });
+                const json = await res.json();
+                if (res.ok && json.success) {
+                    alert('Assignment submitted successfully!');
+                    log('Assignment submitted successfully', 'success');
+                    cancelSubmit(assignmentId);
+                    fetchAssignments(); // Refresh assignments list
+                } else {
+                    alert(json.error || 'Failed to submit assignment');
+                    log(`Failed to submit: ${json.error}`, 'error');
+                }
+            } catch (err) {
+                alert('Failed to submit assignment. Please try again.');
+                log(`submitAssignment error: ${err.message}`, 'error');
+            }
+        }
+
+        async function resubmitAssignment(assignmentId) {
+            showSubmit(assignmentId);
+        }
+
+        async function viewSubmissions(assignmentId) {
+            const container = document.getElementById(`submissions-${assignmentId}`);
+            if (!container) return;
+            
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            container.innerHTML = '<div style="padding: 10px; color: #666;">Loading submissions...</div>';
+            
+            const server = document.getElementById('serverUrl').value || 'http://localhost:3000';
+            try {
+                const res = await fetch(`${server}/api/assignments/${assignmentId}/submissions`, {
+                    headers: { 'Authorization': `Bearer ${currentUserData.token}` }
+                });
+                const json = await res.json();
+                
+                if (res.ok && json.success) {
+                    const submissions = json.data.submissions || [];
+                    if (submissions.length === 0) {
+                        container.innerHTML = '<div style="padding: 20px; color: #999; text-align: center;">No submissions yet.</div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = '<h4 style="margin-bottom: 15px;">Submissions:</h4>';
+                    submissions.forEach(sub => {
+                        const subDiv = document.createElement('div');
+                        subDiv.className = 'submission-item';
+                        subDiv.innerHTML = `
+                            <div class="submission-header">
+                                <span class="submission-student">Student: ${escapeHtml(sub.studentId)}</span>
+                                <span class="submission-meta">Submitted: ${new Date(sub.submittedAt).toLocaleString()}</span>
+                            </div>
+                            ${sub.fileUrl ? `<div style="margin-top: 8px;"><a href="${escapeHtml(sub.fileUrl)}" target="_blank" class="file-link">📎 View Submission</a></div>` : ''}
+                            <div class="grade-input">
+                                <label>Grade:</label>
+                                <input type="number" id="grade-${sub._id}" value="${sub.marks || ''}" placeholder="Enter marks" min="0" max="100" />
+                                <button onclick="gradeSubmission('${assignmentId}', '${sub._id}')" style="width: auto; padding: 6px 12px;">Save Grade</button>
+                            </div>
+                        `;
+                        container.appendChild(subDiv);
+                    });
+                } else {
+                    container.innerHTML = `<div style="padding: 20px; color: #dc3545;">${json.error || 'Failed to load submissions.'}</div>`;
+                }
+            } catch (err) {
+                container.innerHTML = '<div style="padding: 20px; color: #dc3545;">Failed to load submissions.</div>';
+                log(`viewSubmissions error: ${err.message}`, 'error');
+            }
+        }
+
+        async function gradeSubmission(assignmentId, submissionId) {
+            const gradeInput = document.getElementById(`grade-${submissionId}`);
+            if (!gradeInput) return;
+            const marks = gradeInput.value.trim();
+            if (!marks) {
+                alert('Please enter a grade');
+                return;
+            }
+            
+            const server = document.getElementById('serverUrl').value || 'http://localhost:3000';
+            try {
+                const res = await fetch(`${server}/api/assignments/${assignmentId}/submissions/${submissionId}/grade`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUserData.token}` },
+                    body: JSON.stringify({ marks: parseInt(marks) })
+                });
+                const json = await res.json();
+                if (res.ok && json.success) {
+                    alert('Grade saved successfully!');
+                    log('Grade saved successfully', 'success');
+                    viewSubmissions(assignmentId); // Refresh submissions
+                } else {
+                    alert(json.error || 'Failed to save grade');
+                }
+            } catch (err) {
+                alert('Failed to save grade. Please try again.');
+                log(`gradeSubmission error: ${err.message}`, 'error');
+            }
+        }
+
+        async function createAssignment() {
+            if (!currentUserData || !currentUserData.token) {
+                alert('Please login');
+                return;
+            }
+            const title = document.getElementById('assignmentTitle').value.trim();
+            const description = document.getElementById('assignmentDesc').value.trim();
+            const dueDate = document.getElementById('assignmentDue').value;
+            if (!title) {
+                alert('Title is required');
+                return;
+            }
+            const server = document.getElementById('serverUrl').value || 'http://localhost:3000';
+            try {
+                const res = await fetch(`${server}/api/chats/${currentRoom}/assignments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUserData.token}` },
+                    body: JSON.stringify({ title, description, dueDate: dueDate || undefined })
+                });
+                const json = await res.json();
+                if (res.ok && json.success) {
+                    document.getElementById('assignmentTitle').value = '';
+                    document.getElementById('assignmentDesc').value = '';
+                    document.getElementById('assignmentDue').value = '';
+                    fetchAssignments();
+                    log('Assignment created successfully', 'success');
+                } else {
+                    alert(json.error || 'Failed to create assignment');
+                    log(`Failed to create assignment: ${json.error}`, 'error');
+                }
+            } catch (err) {
+                alert('Failed to create assignment. Please try again.');
+                log(`createAssignment error: ${err.message}`, 'error');
+            }
+        }
+
+        function updateTypingIndicator(data) {
+            const indicator = document.getElementById('typingIndicator');
+            
+            if (data.userId === currentUserId) {
+                return; // Don't show own typing indicator
+            }
+
+            if (data.isTyping) {
+                typingUsers.add(data.userId);
+            } else {
+                typingUsers.delete(data.userId);
+            }
+
+            // Update display
+            if (typingUsers.size > 0) {
+                const usersArray = Array.from(typingUsers);
+                if (usersArray.length === 1) {
+                    indicator.textContent = `${usersArray[0]} is typing...`;
+                } else if (usersArray.length === 2) {
+                    indicator.textContent = `${usersArray[0]} and ${usersArray[1]} are typing...`;
+                } else {
+                    indicator.textContent = `${usersArray.length} people are typing...`;
+                }
+                indicator.style.display = 'block';
+            } else {
+                indicator.textContent = '';
+                indicator.style.display = 'none';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Typing indicator management
+        let typingTimeout;
+        let lastTypingEmit = 0;
+        const TYPING_EMIT_INTERVAL = 1000; // Emit typing_start every 1 second while typing
+        const TYPING_STOP_DELAY = 2000; // Stop typing after 2 seconds of inactivity
+
+        document.getElementById('messageInput').addEventListener('input', () => {
+            if (!socket || !socket.connected || !currentRoom) {
+                return;
+            }
+
+            const now = Date.now();
+            
+            // Emit typing_start if enough time has passed since last emit
+            if (now - lastTypingEmit > TYPING_EMIT_INTERVAL) {
+                socket.emit('typing_start', { roomId: currentRoom });
+                lastTypingEmit = now;
+            }
+            
+            // Clear existing timeout and set new one
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                if (socket && socket.connected) {
+                    socket.emit('typing_stop', { roomId: currentRoom });
+                }
+            }, TYPING_STOP_DELAY);
+        });
+
+        // Stop typing when input loses focus
+        document.getElementById('messageInput').addEventListener('blur', () => {
+            if (socket && socket.connected && currentRoom) {
+                clearTimeout(typingTimeout);
+                socket.emit('typing_stop', { roomId: currentRoom });
+            }
+        });
+    </script>
+</body>
+    <script>
+        async function loadAccessInfo() {
+            try {
+                const res = await fetch('/debug/network');
+                if (!res.ok) throw new Error('Network response not ok');
+                const data = await res.json();
+
+                const urls = [];
+                const port = data.listeningPort || (location.port || 80);
+
+                // Collect IPv4 LAN addresses
+                for (const ifaceName of Object.keys(data.interfaces || {})) {
+                    (data.interfaces[ifaceName] || []).forEach((iface) => {
+                        if (iface.family === 'IPv4' && !iface.internal) {
+                            urls.push({type: 'LAN', address: iface.address});
+                        }
+                    });
+                }
+
+                const accessUrlsEl = document.getElementById('accessUrls');
+                const notesEl = document.getElementById('accessNotes');
+
+                accessUrlsEl.innerHTML = '';
+
+                // Show LAN URLs
+                urls.forEach(u => {
+                    const url = `http://${u.address}:${port}`;
+                    const el = document.createElement('div');
+                    el.textContent = `[LAN] ${url}`;
+                    accessUrlsEl.appendChild(el);
+                });
+
+                // Show public URL if available
+                if (data.publicIp) {
+                    const pubUrl = `http://${data.publicIp}:${port}`;
+                    const el = document.createElement('div');
+                    el.textContent = `[Public] ${pubUrl}`;
+                    accessUrlsEl.appendChild(el);
+                }
+
+                notesEl.textContent = 'If accessing from the same LAN, use a LAN address. For external access, ensure your router forwards the port and firewall allows inbound TCP.';
+            } catch (err) {
+                const accessUrlsEl = document.getElementById('accessUrls');
+                const notesEl = document.getElementById('accessNotes');
+                accessUrlsEl.textContent = 'Unable to fetch network info.';
+                notesEl.textContent = err.message || String(err);
+            }
+        }
+
+        window.addEventListener('load', loadAccessInfo);
+    </script>
+</html>
+

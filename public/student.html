@@ -1,0 +1,423 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Student - Materials Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1, h2 { color: #333; }
+    h2 { border-bottom: 2px solid #17a2b8; padding-bottom: 10px; margin-bottom: 20px; }
+    .student-info { background: #e7f3ff; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #007bff; }
+    .form-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background: #fafafa; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+    input[type="text"], select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+    button { background: #17a2b8; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px; }
+    button:hover { background: #138496; }
+    .success { color: #28a745; background: #d4edda; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    .error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    .materials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+    .material-card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #17a2b8; }
+    .material-card h3 { color: #17a2b8; margin-top: 0; }
+    .material-meta { background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 12px; margin: 10px 0; }
+    .roll-badge { background: #17a2b8; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 5px; }
+    .subject-badge { background: #6f42c1; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 5px; }
+    .file-link { display: inline-block; margin-top: 10px; padding: 8px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; }
+    .file-link:hover { background: #0056b3; }
+    .no-materials { text-align: center; color: #666; font-style: italic; padding: 40px; }
+    .access-denied { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; color: #856404; margin: 10px 0; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-card { background: #f8f9fa; padding: 15px; border-radius: 5px; text-align: center; border-left: 4px solid #17a2b8; }
+    .stat-number { font-size: 24px; font-weight: bold; color: #17a2b8; }
+    .stat-label { font-size: 12px; color: #666; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎓 Student Dashboard</h1>
+    
+    <div class="student-info">
+      <h3>Student Information</h3>
+      <p><strong>Name:</strong> <span id="studentName">Loading...</span></p>
+      <p><strong>Roll Number:</strong> <span id="studentRoll">Loading...</span></p>
+      <p><strong>Department:</strong> <span id="studentDept">Loading...</span></p>
+      <p><strong>Your Role:</strong> Student</p>
+    </div>
+
+    <div class="form-section">
+      <h2>📚 Browse Materials</h2>
+      <form id="materialsForm">
+        <div class="form-group">
+          <label for="chatRoomId">Chat Room:</label>
+          <select name="chatRoomId" id="chatRoomId" required>
+            <option value="">--Select Chat Room--</option>
+            <option value="room1">Room 1</option>
+            <option value="room2">Room 2</option>
+          </select>
+        </div>
+        <button type="submit">Load Materials</button>
+        <button type="button" onclick="loadAllMaterials()" style="background: #28a745;">Load All Accessible Materials</button>
+      </form>
+    </div>
+
+    <div class="stats" id="statsContainer" style="display: none;">
+      <div class="stat-card">
+        <div class="stat-number" id="totalMaterials">0</div>
+        <div class="stat-label">Total Materials</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="accessibleMaterials">0</div>
+        <div class="stat-label">Accessible to You</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="subjectCount">0</div>
+        <div class="stat-label">Subjects</div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>📖 Available Materials</h2>
+      <div id="materialsContainer" class="materials-grid">
+        <div class="no-materials">Select a chat room to view materials</div>
+      </div>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <script>
+    function token() { return localStorage.getItem('token'); }
+    
+    async function api(path, opts) {
+      opts = opts || {};
+      opts.headers = opts.headers || {};
+      opts.headers['Authorization'] = 'Bearer ' + token();
+      return fetch(path, opts).then(r => r.json());
+    }
+
+    function showMessage(message, isError = false) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.innerHTML = `<div class="${isError ? 'error' : 'success'}">${message}</div>`;
+      setTimeout(() => messageDiv.innerHTML = '', 5000);
+    }
+
+    // Load student information
+    async function loadStudentInfo() {
+      try {
+        const me = await api('/api/auth/me');
+        if (me && me.success && me.data) {
+          // Display student personal information correctly
+          const name = me.data.name || 'Unknown';
+          const rollNo = me.data.rollNo || 'Not assigned';
+          const dept = me.data.departmentId || 'Not assigned';
+          
+          document.getElementById('studentName').textContent = name;
+          document.getElementById('studentRoll').textContent = rollNo;
+          document.getElementById('studentDept').textContent = dept;
+          
+          // Also load college information if available
+          if (me.data.collegeId) {
+            try {
+              const collegesRes = await api('/api/colleges');
+              if (collegesRes && collegesRes.success && collegesRes.data && Array.isArray(collegesRes.data)) {
+                const college = collegesRes.data.find(c => String(c._id) === String(me.data.collegeId));
+                if (college) {
+                  // Optionally display college info
+                  console.log('Student college:', college.name);
+                }
+              }
+            } catch (collegeError) {
+              console.warn('Could not load college info:', collegeError);
+            }
+          }
+        } else {
+          console.error('Failed to load student info: Invalid response', me);
+          showMessage('Failed to load student information. Please refresh the page.', true);
+        }
+      } catch (error) {
+        console.error('Failed to load student info:', error);
+        showMessage('Failed to load student information. Please refresh the page.', true);
+      }
+    }
+
+    // Load materials for a specific chat room
+    async function loadMaterials(chatRoomId) {
+      try {
+        const container = document.getElementById('materialsContainer');
+        container.innerHTML = '<div class="no-materials">Loading materials...</div>';
+        
+        const res = await api(`/api/chats/${encodeURIComponent(chatRoomId)}/materials`);
+        const statsContainer = document.getElementById('statsContainer');
+        
+        if (res && res.success && Array.isArray(res.data)) {
+          const materials = res.data;
+          
+          // Update statistics
+          document.getElementById('totalMaterials').textContent = materials.length;
+          
+          // Load subject names if available
+          const subjectIds = [...new Set(materials.filter(m => m.subjectId).map(m => m.subjectId))];
+          const subjectNames = {};
+          
+          // Try to get subject names from subjects endpoint if available
+          try {
+            const me = await api('/api/auth/me');
+            if (me.success && me.data && me.data.classroomId) {
+              const subjectsRes = await api('/api/subjects/classroom/' + encodeURIComponent(me.data.classroomId));
+              if (subjectsRes.success && Array.isArray(subjectsRes.data)) {
+                subjectsRes.data.forEach(subject => {
+                  subjectNames[subject._id] = subject.name;
+                });
+              }
+            }
+          } catch (e) {
+            console.warn('Could not load subject names:', e);
+          }
+          
+          // Group materials by subject
+          const materialsBySubject = {};
+          materials.forEach(material => {
+            const subjectKey = material.subjectId || 'general';
+            if (!materialsBySubject[subjectKey]) {
+              const subjectName = material.subjectId && subjectNames[material.subjectId] 
+                ? subjectNames[material.subjectId] 
+                : (material.subjectId ? 'Subject ' + material.subjectId.substring(0, 8) + '...' : 'General');
+              materialsBySubject[subjectKey] = {
+                subjectName: subjectName,
+                materials: []
+              };
+            }
+            materialsBySubject[subjectKey].materials.push(material);
+          });
+          
+          document.getElementById('subjectCount').textContent = Object.keys(materialsBySubject).length;
+          
+          if (materials.length === 0) {
+            container.innerHTML = '<div class="no-materials">No materials available in this chat room.</div>';
+            statsContainer.style.display = 'none';
+            return;
+          }
+          
+          statsContainer.style.display = 'grid';
+          
+          // Render materials by subject
+          container.innerHTML = '';
+          let accessibleCount = 0;
+          
+          Object.values(materialsBySubject).forEach(subjectGroup => {
+            const subjectSection = document.createElement('div');
+            subjectSection.style.gridColumn = '1 / -1';
+            subjectSection.style.marginTop = '20px';
+            subjectSection.style.marginBottom = '10px';
+            subjectSection.innerHTML = `<h3 style="color: #17a2b8; border-bottom: 2px solid #17a2b8; padding-bottom: 5px;">${subjectGroup.subjectName}</h3>`;
+            container.appendChild(subjectSection);
+            
+            subjectGroup.materials.forEach(material => {
+              const materialCard = document.createElement('div');
+              materialCard.className = 'material-card';
+              
+              // Backend already filtered based on roll number, so all materials shown are accessible
+              accessibleCount++;
+              
+              materialCard.innerHTML = `
+                <h3>${material.title}</h3>
+                ${material.description ? `<p>${material.description}</p>` : ''}
+                <div class="material-meta">
+                  <strong>Roll Range:</strong> ${material.rollStart || 'N/A'} - ${material.rollEnd || 'N/A'}
+                  ${material.rollStart && material.rollEnd ? '<span class="roll-badge">FILTERED</span>' : ''}
+                  <br>
+                  <strong>Uploaded:</strong> ${material.createdAt ? new Date(material.createdAt).toLocaleDateString() : 'Unknown'}
+                  ${material.subjectId ? '<span class="subject-badge">SUBJECT</span>' : ''}
+                </div>
+                ${material.fileUrl ? `<a href="${material.fileUrl}" target="_blank" class="file-link">📄 View/Download File</a>` : ''}
+              `;
+              
+              container.appendChild(materialCard);
+            });
+          });
+          
+          document.getElementById('accessibleMaterials').textContent = accessibleCount;
+          
+        } else {
+          container.innerHTML = '<div class="no-materials">Failed to load materials.</div>';
+          statsContainer.style.display = 'none';
+          if (res && res.error) {
+            showMessage(`Error: ${res.error}`, true);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load materials:', error);
+        document.getElementById('materialsContainer').innerHTML = '<div class="no-materials">Failed to load materials.</div>';
+        document.getElementById('statsContainer').style.display = 'none';
+        showMessage('Network error while loading materials', true);
+      }
+    }
+
+    // Load all accessible materials from available rooms (room1 and room2)
+    async function loadAllMaterials() {
+      try {
+        const container = document.getElementById('materialsContainer');
+        container.innerHTML = '<div class="no-materials">Loading all accessible materials...</div>';
+        
+        const availableRooms = ['room1', 'room2'];
+        const allMaterials = [];
+        
+        // Load materials from room1 and room2
+        for (const chatRoomId of availableRooms) {
+          try {
+            const res = await api(`/api/chats/${encodeURIComponent(chatRoomId)}/materials`);
+            if (res && res.success && Array.isArray(res.data)) {
+              allMaterials.push(...res.data);
+            }
+          } catch (err) {
+            console.warn(`Failed to load materials from ${chatRoomId}:`, err);
+          }
+        }
+        
+        // Also try to load from subjects the student might be enrolled in
+        try {
+          const me = await api('/api/auth/me');
+          if (me.success && me.data && me.data.classroomId) {
+            const subjectsRes = await api('/api/subjects/classroom/' + encodeURIComponent(me.data.classroomId));
+            if (subjectsRes.success && Array.isArray(subjectsRes.data)) {
+              const subjectChatRooms = [...new Set(subjectsRes.data.map(s => s.chatRoomId || 'room1'))];
+              for (const chatRoomId of subjectChatRooms) {
+                // Only load from room1 or room2
+                if (availableRooms.includes(chatRoomId)) {
+                  try {
+                    const res = await api(`/api/chats/${encodeURIComponent(chatRoomId)}/materials`);
+                    if (res && res.success && Array.isArray(res.data)) {
+                      allMaterials.push(...res.data);
+                    }
+                  } catch (err) {
+                    console.warn(`Failed to load materials from ${chatRoomId}:`, err);
+                  }
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Could not load materials from subjects:', err);
+        }
+        
+        // Remove duplicates based on material ID
+        const uniqueMaterials = [];
+        const seenIds = new Set();
+        allMaterials.forEach(m => {
+          if (m._id && !seenIds.has(m._id)) {
+            seenIds.add(m._id);
+            uniqueMaterials.push(m);
+          }
+        });
+        
+        // Display the materials
+        if (uniqueMaterials.length === 0) {
+          container.innerHTML = '<div class="no-materials">No materials available.</div>';
+          document.getElementById('statsContainer').style.display = 'none';
+          return;
+        }
+        
+        // Use the same rendering logic as loadMaterials
+        const statsContainer = document.getElementById('statsContainer');
+        document.getElementById('totalMaterials').textContent = uniqueMaterials.length;
+        
+        // Load subject names
+        const subjectIds = [...new Set(uniqueMaterials.filter(m => m.subjectId).map(m => m.subjectId))];
+        const subjectNames = {};
+        try {
+          const me = await api('/api/auth/me');
+          if (me.success && me.data && me.data.classroomId) {
+            const subjectsRes = await api('/api/subjects/classroom/' + encodeURIComponent(me.data.classroomId));
+            if (subjectsRes.success && Array.isArray(subjectsRes.data)) {
+              subjectsRes.data.forEach(subject => {
+                subjectNames[subject._id] = subject.name;
+              });
+            }
+          }
+        } catch (e) {
+          console.warn('Could not load subject names:', e);
+        }
+        
+        // Group materials by subject
+        const materialsBySubject = {};
+        uniqueMaterials.forEach(material => {
+          const subjectKey = material.subjectId || 'general';
+          if (!materialsBySubject[subjectKey]) {
+            const subjectName = material.subjectId && subjectNames[material.subjectId] 
+              ? subjectNames[material.subjectId] 
+              : (material.subjectId ? 'Subject ' + material.subjectId.substring(0, 8) + '...' : 'General');
+            materialsBySubject[subjectKey] = {
+              subjectName: subjectName,
+              materials: []
+            };
+          }
+          materialsBySubject[subjectKey].materials.push(material);
+        });
+        
+        document.getElementById('subjectCount').textContent = Object.keys(materialsBySubject).length;
+        document.getElementById('accessibleMaterials').textContent = uniqueMaterials.length;
+        statsContainer.style.display = 'grid';
+        
+        // Render materials
+        container.innerHTML = '';
+        Object.values(materialsBySubject).forEach(subjectGroup => {
+          const subjectSection = document.createElement('div');
+          subjectSection.style.gridColumn = '1 / -1';
+          subjectSection.style.marginTop = '20px';
+          subjectSection.style.marginBottom = '10px';
+          subjectSection.innerHTML = `<h3 style="color: #17a2b8; border-bottom: 2px solid #17a2b8; padding-bottom: 5px;">${subjectGroup.subjectName}</h3>`;
+          container.appendChild(subjectSection);
+          
+          subjectGroup.materials.forEach(material => {
+            const materialCard = document.createElement('div');
+            materialCard.className = 'material-card';
+            materialCard.innerHTML = `
+              <h3>${material.title}</h3>
+              ${material.description ? `<p>${material.description}</p>` : ''}
+              <div class="material-meta">
+                <strong>Roll Range:</strong> ${material.rollStart || 'N/A'} - ${material.rollEnd || 'N/A'}
+                ${material.rollStart && material.rollEnd ? '<span class="roll-badge">FILTERED</span>' : ''}
+                <br>
+                <strong>Uploaded:</strong> ${material.createdAt ? new Date(material.createdAt).toLocaleDateString() : 'Unknown'}
+                ${material.subjectId ? '<span class="subject-badge">SUBJECT</span>' : ''}
+              </div>
+              ${material.fileUrl ? `<a href="${material.fileUrl}" target="_blank" class="file-link">📄 View/Download File</a>` : ''}
+            `;
+            container.appendChild(materialCard);
+          });
+        });
+        
+        showMessage(`Loaded ${uniqueMaterials.length} accessible materials`);
+      } catch (error) {
+        console.error('Failed to load all materials:', error);
+        document.getElementById('materialsContainer').innerHTML = '<div class="no-materials">Failed to load materials.</div>';
+        showMessage('Network error while loading materials', true);
+      }
+    }
+    
+    // Make loadAllMaterials available globally
+    window.loadAllMaterials = loadAllMaterials;
+
+    // Handle form submission
+    document.getElementById('materialsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const chatRoomId = e.target.chatRoomId.value;
+      if (chatRoomId) {
+        await loadMaterials(chatRoomId);
+      }
+    });
+
+    // Initialize the page
+    async function initializePage() {
+      await loadStudentInfo();
+      // Auto-load all accessible materials on page load
+      setTimeout(() => {
+        loadAllMaterials();
+      }, 500);
+    }
+    
+    initializePage();
+  </script>
+</body>
+</html>
