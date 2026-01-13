@@ -159,13 +159,18 @@
 
     // Load HOD information
     async function loadHodInfo() {
+      console.log('🔍 Loading HOD info...');
       try {
         const [me, collegesRes] = await Promise.all([
           api('/api/auth/me'),
           api('/api/colleges')
         ]);
         
+        console.log('📊 Auth response:', me);
+        console.log('📊 Colleges response:', collegesRes);
+        
         if (me.success && me.data) {
+          console.log('✅ HOD user found:', me.data);
           // Display department
           document.getElementById('deptDisplay').textContent = me.data.departmentId || 'Unknown';
           
@@ -191,11 +196,11 @@
             document.getElementById('facultyDepartment').value = me.data.departmentId;
           }
         } else {
-          console.error('Failed to load HOD info: Invalid response', me);
+          console.error('❌ Failed to load HOD info: Invalid response', me);
           showMessage('Failed to load department information', true);
         }
       } catch (error) {
-        console.error('Failed to load HOD info:', error);
+        console.error('❌ Failed to load HOD info:', error);
         showMessage('Failed to load department information', true);
       }
     }
