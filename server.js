@@ -17,9 +17,19 @@ const app = express();
 const server = http.createServer(app);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // More specific origins for development
+  methods: ['GET', 'POST'],
+  credentials: true // Allow cookies/authorization headers
+}));
 app.use(express.json());
 app.use(express.static('public'));
+
+// Debug middleware to log requests
+app.use((req, res, next) => {
+  console.log(`🔍 ${req.method} ${req.path} - Headers:`, req.headers);
+  next();
+});
 
 // Auth routes (register / login)
 const authRouter = require('./routes/auth');
@@ -44,8 +54,9 @@ app.use('/api/materials', materialsRouter);
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: '*', // In production, specify your frontend URL
-    methods: ['GET', 'POST']
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    methods: ['GET', 'POST'],
+    credentials: true
   },
   pingTimeout: 60000,
   pingInterval: 25000
