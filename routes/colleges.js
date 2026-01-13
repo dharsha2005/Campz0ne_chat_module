@@ -6,7 +6,7 @@ const CollegesController = require('../controllers/collegesController');
 
 // College management routes (admin only)
 router.post('/', authenticateToken, requireRole('admin'), CollegesController.createCollege);
-router.get('/', authenticateToken, requireRole('admin'), CollegesController.listColleges);
+router.get('/', authenticateToken, requireRole('admin', 'hod'), CollegesController.listColleges);
 router.get('/:id', authenticateToken, requireRole('admin'), CollegesController.getCollege);
 router.put('/:id', authenticateToken, requireRole('admin'), CollegesController.updateCollege);
 router.delete('/:id', authenticateToken, requireRole('admin'), CollegesController.deleteCollege);

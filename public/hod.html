@@ -194,6 +194,18 @@
           // Pre-fill department in faculty form
           if (me.data.departmentId) {
             document.getElementById('facultyDepartment').value = me.data.departmentId;
+            document.getElementById('studentDepartment').value = me.data.departmentId;
+            console.log('✅ Department pre-filled:', me.data.departmentId);
+            
+            // Make sure department field is visible
+            const studentDeptField = document.getElementById('studentDepartment');
+            if (studentDeptField) {
+              studentDeptField.style.display = 'block';
+              studentDeptField.style.visibility = 'visible';
+              console.log('✅ Student department field made visible');
+            } else {
+              console.error('❌ Student department field not found');
+            }
           }
         } else {
           console.error('❌ Failed to load HOD info: Invalid response', me);
@@ -375,12 +387,25 @@
         classroomId: f.classroomId.value
       };
       
+      console.log('🔍 Sending student data:', body);
+      console.log('🔍 Form values:', {
+        name: f.name.value,
+        email: f.email.value,
+        password: f.password.value,
+        rollNumber: f.rollNumber.value,
+        departmentId: f.departmentId.value,
+        classroomId: f.classroomId.value
+      });
+      console.log('🔍 HOD data:', me.data);
+      
       try {
         const res = await api('/api/users/student', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
         });
+        
+        console.log('📊 Student creation response:', res);
         
         if (res.success) {
           showMessage(`Student created successfully: ${res.data.name}`);
@@ -390,9 +415,11 @@
           loadStudentList();
           loadOverview();
         } else {
+          console.error('❌ Student creation failed:', res.error);
           showMessage(`Error: ${res.error}`, true);
         }
       } catch (error) {
+        console.error('❌ Network error:', error);
         showMessage(`Network error: ${error.message}`, true);
       }
     });
@@ -433,7 +460,7 @@
                   <div>
                     <strong>${student.name || 'Unknown'}</strong><br>
                     <small>Email: ${student.email || 'N/A'}</small><br>
-                    <small>Roll: ${student.rollNumber || 'N/A'}</small><br>
+                    <small>Roll: ${student.rollNo || 'N/A'}</small><br>
                     <small>Classroom: ${student.classroomId || 'Not assigned'}</small><br>
                     <small>College: ${collegeName}</small>
                   </div>
