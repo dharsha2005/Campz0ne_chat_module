@@ -1,113 +1,82 @@
-# Rice Mill Management System
+📁Cz-ct-mouleonfg└dtaba.js#MongoDBcoctio configuraioncllers├uthCorler.j#Authentin ndpoinchtAsignnCotrlerj#Assign anagmenhMtlsCntrolrj#Meral upload/maaen├lgeCoror.j# Cogaam
+│├── sujctsCnollr.js#mnagmnt│└──rCono.jsUsm├──miw/│ ├──ahMddle.jJWThen│   ├──prpatddwr.jChtacpvid│└──leMddlew.j  #Rol-badacscro
+├──mde/│├──Ur.j Usch│├──Cege.j#Cghma│  ├──Subje.j#SubjtchmaRomI│ ├── R.js# Ch oom chema│├──Papat.j# Ro pripnthma│ ├── .js#schma(Lampotmestmp)
+│ ├── ChaMerial.j      # Maeil shema│├──ChAinm.js    # Astchema│ ├── Message.j#Rdceipchma│ ├── Stu.js   # Tndic schema│├── MsagQuueLog.js#Msag quueogch│ └── ChatK.j#E keyssch (sub)├──pblc/│├──ndxtl#t lnt│ ├──d.hm#Amsbd│ ├──fclt.h #Fauly ord│├──u.m#Studdahboard│└──ud/ma/ #Marauoadiryrutes├uh   Autherutchat#ChatroutmerialsMerialutsssgmens  # AssgmenroutscollsCollouubjs        Subjrouts└ers#Usr manmnt rot
+├──rvis/├uhSevc      Authetiaic
+│   ├── participantService.js # Partipant management├nt
+│   ├── rollUtils.js         # Roll umber utilities
+│   └── sockeService.js    # Socket.IO servicesripts├sedDaa.jsDatabasseding crip
+│  ├── raeUser.js     #Uer eation utilyetup-collgCollegtup utly authentication
+2. **colleges**- College/oganization information
+3. **subjct** - Subject managmet with hat room intgration4567. **chat_materials** - File/material sharing with metadata
+8. **chat_assignments** - Assignment management
+9101112nd idex
+- `subjects`: `{ facultyI:1, collegeId: 1, chatRoomId: 1 }` - Faculty subject ing🎓Rol-Baed Access Cotroler Roles
 
-A complete Angular frontend application for managing a rice mill business operations.
+1. **Adm** - Full system access
+   - User manaement(creae HOD, Faculty, Students)
+   - College management
+   - View all users wit college/department info
+   - System configuration
 
-## Features
+2. **HOD** - Department-level access
+   - Manag faculty andstudnt in departmen
+   -reate subjects and assignments
+   - Upoad materals for departm3 **Faculty** - Subject-level access
+  - Create and manage subjects
+   - Upload and manage materials
+   - e roll number rnges fo maerialaccess
+   - Delee own materials
 
-- **Dashboard**: Overview with total stock, sales, and profit metrics with visual charts
-- **Rice Variety & Stock Management**: CRUD operations for rice varieties with low stock alerts
-- **Sales Entry**: Record sales with automatic stock reduction
-- **Sales Report**: Variety-wise sales analysis with profit calculations
-- **Expense Management**: Track various expenses (paddy purchase, labour, electricity, etc.)
-- **Monthly Profit**: Profit/loss analysis with month/year selection and charts
-- **Payment & Credit**: Manage customer payments and track credit status
+4. **Student** - Limited access
+   - View assigned materials
+   - Filter by roll number range
+   - Download accessible files
 
-## Tech Stack
+## 💬 Cat RplySytem
 
-- Angular 17
-- TypeScript
-- Bootstrap 5
-- Chart.js / ng2-charts
-- RxJS
+### Enhanced Reply Fatues
 
-## Installation
+- **👤 Send Names** Shows actual username of person being replied to
+- **📝 MessageCotext**: Dislays original essage content
+- **🎯Viual Indication**: Clear reply formating with quoted content
+- **❌ Cncel Option**: Clea reply conext when needed- **🔗 Message Linking**: Replies linked to original messages
 
-1. Install dependencies:
-```bash
-npm install
-```
+### Reply Flow
 
-2. Start the development server:
-```bash
-npm start
-```
+1. **Click Reply** on any message
+**Context Display**: Shows "Username: riginal message..."
+3. **Ty Respose**:Int fied focused automatally
+4. **Send Reply**: Includes quoted orgial message with senr name
+5. **Display**: Reply shows original sender contet clearly
 
-3. Navigate to `http://localhost:4200/`
+## 📚 Materials Management
 
-## Project Structure
+### Faculty Features
 
-```
-src/
-├── app/
-│   ├── components/
-│   │   ├── dashboard/
-│   │   ├── rice-variety/
-│   │   ├── sales-entry/
-│   │   ├── sales-report/
-│   │   ├── expense-management/
-│   │   ├── monthly-profit/
-│   │   └── payment/
-│   ├── models/
-│   │   ├── rice-variety.model.ts
-│   │   ├── sales.model.ts
-│   │   ├── expense.model.ts
-│   │   └── payment.model.ts
-│   ├── services/
-│   │   └── data.service.ts
-│   ├── app.module.ts
-│   ├── app-routing.module.ts
-│   └── app.component.ts
-├── styles.css
-└── index.html
-```
+- **📁 Subject Creation**: Create subjects with roll number ranges
+- **💾 Material Upload**: Upload files wit metadata
+- **🎯 Roll Filtering**: Se access by roll nuber ranges
+- **✏️ Edit/Deete**: Manage ownmaterals
+- **🏫 College Ifo**:Displa college and classroom details
+- **💬 Chat Integration**: Materials linked to chat roms
 
-## Usage
+### Student Feates
 
-The application uses mock data stored in the `DataService`. All data is persisted in memory during the session. To connect to a backend API, modify the `DataService` to make HTTP calls instead of using BehaviorSubjects.
+- **📖Bwse Materials**: Vie accessible material
+- **🔍 Roll Filtering**: See only matrials for yourll ange
+- **📊Statitics**: Viw mateial accssstats
+- **⬇️ Download**: Access allowed fles
 
-## Features Overview
+## 🧪 Tesing
 
-### Dashboard
-- Real-time overview of business metrics
-- Daily sales trend chart (last 7 days)
-- Monthly profit chart (last 6 months)
+###Usng Test Client
 
-### Rice Variety Management
-- Add, edit, delete rice varieties
-- Track stock quantities
-- Low stock warnings (below 500 kg)
-- Cost and selling price management
+1. Strtthe server: `nm stat`
+2. Opn `public/index.html` in your brower6. **Reply Functionality**: Test reply with sender names7. **Material Upload**: Test file sharing via faculty dashboard
 
-### Sales Entry
-- Record sales with automatic calculations
-- Automatic stock deduction
-- Multiple payment types (Cash, UPI, Credit)
-
-### Sales Report
-- Variety-wise sales breakdown
-- Profit calculation per variety
-- Total sales and profit summary
-
-### Expense Management
-- Track different expense categories
-- Monthly expense totals
-- Add, edit, delete expenses
-
-### Monthly Profit
-- Month and year selection
-- Profit/Loss calculation
-- Visual charts for financial overview
-
-### Payment & Credit
-- Customer payment tracking
-- Credit status management
-- Pending amount calculations
-
-## Notes
-
-- All data is stored in memory (mock data)
-- Stock is automatically reduced when sales are recorded
-- Profit calculations consider cost price vs selling price
-- The UI is designed for non-technical users with a clean, professional look
-
-# Campz0ne_chat_module
+JWT-badwihrolviictioRl-aedaccss control ndpitdforcss-origin requests
+- **File Uload**: Scue file handingwithtye valiaDaabascrypEnd-to-ndrypmpnttinAvacetrics dashboard
+- [ ] Mobil app inegation
+- [ ] Video/audo alling upporties
+- **File Upload**: Optimzed matrial torage and retrievald duimamn
